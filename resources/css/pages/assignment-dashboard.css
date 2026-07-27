@@ -1,0 +1,14 @@
+.student-dashboard-task {
+    display: flex;
+    justify-content: space-between;
+    gap: .75rem;
+    align-items: center;
+    padding: .75rem 0;
+    color: inherit;
+    border-bottom: 1px solid var(--skuad-border);
+    text-decoration: none;
+}
+
+.student-dashboard-task:hover { color: var(--skuad-teal-700); }
+.student-dashboard-task span { display: grid; }
+.student-dashboard-task small { color: var(--skuad-muted); }

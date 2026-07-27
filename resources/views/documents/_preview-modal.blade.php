@@ -1,0 +1,5 @@
+@push('overlays')
+<div class="modal fade document-preview-modal" id="documentPreviewModal" tabindex="-1" aria-labelledby="documentPreviewTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><div><p class="skuad-eyebrow mb-1">Google Drive Preview</p><h2 class="modal-title h5" id="documentPreviewTitle" data-document-preview-title>Preview dokumen</h2></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div><div class="modal-body p-0"><iframe data-document-preview-frame src="about:blank" title="Preview Google Drive" loading="lazy" referrerpolicy="no-referrer"></iframe></div><div class="modal-footer justify-content-between"><small class="text-secondary">Jika preview ditolak, periksa izin sharing Viewer di Google Drive.</small><x-ui.button href="#" target="_blank" rel="noopener noreferrer" data-document-preview-open icon="bi-box-arrow-up-right">Buka di Drive</x-ui.button></div></div></div>
+</div>
+@endpush

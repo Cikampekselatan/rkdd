@@ -1,0 +1,1 @@
+@extends('layouts.dashboard') @section('title','Tambah Staff') @section('breadcrumb','Tambah Staff') @section('content')<x-ui.page-header eyebrow="Master pengguna" title="Tambah staff" /><div class="skuad-card p-4 p-lg-5 mx-auto" style="max-width:60rem"><form method="POST" action="{{ route('admin.staff.store') }}">@csrf @include('admin.staff._form')</form></div>@endsection

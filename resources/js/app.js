@@ -1,0 +1,14 @@
+import 'bootstrap';
+import './components/sidebar';
+import './components/feedback';
+import './components/registration-codes';
+import './components/onboarding';
+import './components/master-data';
+import './components/program-theme';
+import './components/staff-form';
+import './components/assignment-questions';
+import './components/document-center';
+import './components/attendance';
+import './components/signature-pad';
+import './components/grading';
+import './components/responsive';

@@ -1,0 +1,114 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+@import './tokens.css';
+@import './components.css';
+@import './layout.css';
+@import './pages/auth.css';
+@import './pages/design-system.css';
+@import './pages/registration-codes.css';
+@import './pages/onboarding.css';
+@import './pages/master-data.css';
+@import './pages/student-dashboard.css';
+@import './pages/learning.css';
+@import './pages/document-center.css';
+@import './pages/attendance.css';
+@import './pages/phase12.css';
+@import './pages/assignments.css';
+@import './pages/assignment-dashboard.css';
+@import './pages/grading.css';
+@import './pages/portfolio.css';
+@import './pages/interactions.css';
+@import './pages/lead-dashboard.css';
+@import './pages/admin-dashboard.css';
+@import './pages/reports.css';
+@import './pages/landing.css';
+@import './pages/responsive-polish.css';
+
+body {
+    min-height: 100vh;
+    color: var(--skuad-text);
+    background:
+        radial-gradient(circle at 10% 15%, rgb(20 184 166 / 12%), transparent 28rem),
+        linear-gradient(180deg, #fbfdff 0%, var(--skuad-surface) 100%);
+    font-family: var(--skuad-font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.navbar-brand {
+    color: var(--skuad-navy-950);
+    font-family: var(--skuad-font-heading);
+}
+
+.site-header {
+    background: rgb(255 255 255 / 88%);
+    border-bottom: 1px solid rgb(226 232 240 / 75%);
+    backdrop-filter: blur(16px);
+}
+
+.hero {
+    min-height: calc(100vh - 74px);
+    padding-block: 5rem;
+}
+
+.hero-kicker {
+    color: var(--skuad-teal-700);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.hero-title {
+    max-width: 13ch;
+    color: var(--skuad-navy-950);
+    font-size: clamp(2.7rem, 7vw, 5.8rem);
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    line-height: 0.98;
+}
+
+.hero-copy {
+    max-width: 38rem;
+    color: var(--skuad-muted);
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    line-height: 1.75;
+}
+
+.phase-card,
+.placeholder-card {
+    background: rgb(255 255 255 / 92%);
+    border: 1px solid var(--skuad-border);
+    border-radius: var(--skuad-radius-xl);
+    box-shadow: var(--skuad-shadow-xl);
+}
+
+.phase-number {
+    color: var(--skuad-orange-500);
+    font-size: 4.5rem;
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 1;
+}
+
+.placeholder-shell {
+    display: grid;
+    min-height: calc(100vh - 74px);
+    padding-block: 4rem;
+    place-items: center;
+}
+
+@media (max-width: 767.98px) {
+    .hero {
+        min-height: auto;
+        padding-block: 3.5rem;
+    }
+
+    .hero-title {
+        font-size: clamp(2.75rem, 15vw, 4.25rem);
+    }
+}

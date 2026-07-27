@@ -1,0 +1,41 @@
+:root {
+    --skuad-navy-950: #071827;
+    --skuad-navy-900: #0b2239;
+    --skuad-navy-800: #123654;
+    --skuad-teal-700: #0b7f79;
+    --skuad-teal-600: #0f9f96;
+    --skuad-teal-500: #14b8a6;
+    --skuad-teal-100: #ccfbf1;
+    --skuad-cyan-400: #22d3ee;
+    --skuad-orange-500: #f59e0b;
+    --skuad-orange-100: #fef3c7;
+    --skuad-surface: #f5f7fa;
+    --skuad-card: #ffffff;
+    --skuad-text: #14212b;
+    --skuad-muted: #64748b;
+    --skuad-border: #e2e8f0;
+    --skuad-success: #16a34a;
+    --skuad-warning: #d97706;
+    --skuad-danger: #dc2626;
+    --skuad-info: #0284c7;
+    --skuad-font-heading: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+    --skuad-font-body: Inter, "Segoe UI", sans-serif;
+    --skuad-radius-sm: 0.75rem;
+    --skuad-radius-md: 1rem;
+    --skuad-radius-lg: 1.25rem;
+    --skuad-radius-xl: 1.5rem;
+    --skuad-shadow-sm: 0 8px 24px rgb(7 24 39 / 7%);
+    --skuad-shadow-lg: 0 18px 48px rgb(7 24 39 / 10%);
+    --skuad-shadow-xl: 0 28px 80px rgb(7 24 39 / 13%);
+    --skuad-transition: 180ms ease;
+}
+
+::selection {
+    color: white;
+    background: var(--skuad-teal-600);
+}
+
+:focus-visible {
+    outline: 3px solid rgb(34 211 238 / 45%);
+    outline-offset: 3px;
+}

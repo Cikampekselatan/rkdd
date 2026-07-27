@@ -1,0 +1,96 @@
+.design-system-page {
+    animation: skuad-page-reveal 420ms ease both;
+}
+
+@keyframes skuad-page-reveal {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.design-section {
+    margin-top: 1.5rem;
+    padding: clamp(1rem, 2.5vw, 1.5rem);
+    background: rgb(255 255 255 / 78%);
+    border: 1px solid rgb(226 232 240 / 84%);
+    border-radius: var(--skuad-radius-xl);
+    box-shadow: 0 10px 34px rgb(7 24 39 / 5%);
+    backdrop-filter: blur(10px);
+}
+
+.design-section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.design-section-header h2 { margin: 0; font-size: 1.15rem; font-weight: 800; }
+.design-section-header p { margin: 0.35rem 0 0; color: var(--skuad-muted); font-size: 0.85rem; }
+.design-index { color: #94a3b8; font-family: var(--skuad-font-heading); font-size: 0.76rem; font-weight: 800; }
+
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.color-swatch {
+    overflow: hidden;
+    background: white;
+    border: 1px solid var(--skuad-border);
+    border-radius: 1rem;
+}
+
+.color-swatch-preview { height: 76px; background: var(--swatch); }
+.color-swatch-copy { padding: 0.7rem; }
+.color-swatch-copy strong,
+.color-swatch-copy code { display: block; }
+.color-swatch-copy strong { font-size: 0.75rem; }
+.color-swatch-copy code { margin-top: 0.15rem; color: var(--skuad-muted); font-size: 0.65rem; }
+
+.type-display { font-size: clamp(2.2rem, 6vw, 4.7rem); font-weight: 800; letter-spacing: -0.06em; line-height: 1; }
+.type-heading { font-size: clamp(1.65rem, 4vw, 2.65rem); font-weight: 800; letter-spacing: -0.04em; }
+.type-body { max-width: 48rem; color: var(--skuad-muted); font-size: 1rem; line-height: 1.75; }
+
+.component-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.avatar-row { display: flex; align-items: flex-end; gap: 1rem; }
+
+.example-panel {
+    height: 100%;
+    padding: 1.25rem;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: var(--skuad-radius-lg);
+}
+
+.student-mobile-card {
+    display: grid;
+    gap: 0.8rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid var(--skuad-border);
+    border-radius: var(--skuad-radius-md);
+    box-shadow: var(--skuad-shadow-sm);
+}
+
+.student-mobile-card-header { display: flex; align-items: center; gap: 0.75rem; }
+.student-mobile-card-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.student-mobile-card-meta div { padding: 0.65rem; background: #f8fafc; border-radius: 0.75rem; }
+.student-mobile-card-meta small { display: block; color: var(--skuad-muted); font-size: 0.68rem; }
+
+@media (max-width: 1199.98px) {
+    .color-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 575.98px) {
+    .color-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .design-section-header { align-items: flex-start; flex-direction: column-reverse; }
+    .component-row .btn { flex: 1 1 calc(50% - 0.75rem); }
+}

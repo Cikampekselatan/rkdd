@@ -1,0 +1,7 @@
+@extends('layouts.dashboard')
+@section('title',$announcement->title.' - SKUAD')
+@section('breadcrumb','Detail pengumuman')
+@section('content')
+<div class="interaction-page"><article class="announcement-paper priority-{{ $announcement->priority->value }}"><header><div><p>{{ $announcement->priority->label() }} · {{ $announcement->audience->label() }}</p><h1>{{ $announcement->title }}</h1><span>{{ $announcement->author->name }} · {{ $announcement->published_at?->translatedFormat('d F Y, H:i') ?? 'Belum dipublikasikan' }}</span></div><i class="bi bi-megaphone"></i></header><div class="announcement-body">{!! nl2br(e($announcement->body)) !!}</div><footer>@if($announcement->schoolClass)<span><i class="bi bi-people"></i> {{ $announcement->schoolClass->name }}</span>@endif @if($announcement->learningSession)<span><i class="bi bi-journal-bookmark"></i> {{ $announcement->learningSession->title }}</span>@endif @if($announcement->expires_at)<span><i class="bi bi-clock"></i> Berlaku sampai {{ $announcement->expires_at->translatedFormat('d F Y H:i') }}</span>@endif</footer></article>
+@can('update', $announcement)<div class="interaction-actions"><a class="btn btn-primary" href="{{ route('teacher.announcements.edit',$announcement) }}">Edit</a>@can('delete', $announcement)<form method="POST" action="{{ route('teacher.announcements.destroy',$announcement) }}" onsubmit="return confirm('Hapus pengumuman?')">@csrf @method('DELETE')<button class="btn btn-outline-danger">Hapus</button></form>@endcan</div>@endcan</div>
+@endsection

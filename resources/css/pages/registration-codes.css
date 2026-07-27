@@ -1,0 +1,59 @@
+.registration-code-reveal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    color: white;
+    background:
+        radial-gradient(circle at 90% 20%, rgb(34 211 238 / 24%), transparent 18rem),
+        var(--skuad-navy-950);
+    border-radius: var(--skuad-radius-lg);
+    box-shadow: var(--skuad-shadow-lg);
+}
+
+.registration-code-reveal h2 { margin: 0; color: white; font-size: 1.25rem; font-weight: 800; }
+.registration-code-reveal p:not(.skuad-eyebrow) { margin: 0.35rem 0 0; color: #a9bdca; }
+
+.registration-code-value {
+    display: flex;
+    min-width: min(100%, 24rem);
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 0.85rem 0.75rem 1rem;
+    background: rgb(255 255 255 / 9%);
+    border: 1px solid rgb(255 255 255 / 12%);
+    border-radius: 1rem;
+}
+
+.registration-code-value code { overflow-wrap: anywhere; color: #99f6e4; font-size: 1rem; font-weight: 800; letter-spacing: 0.08em; }
+.registration-code-value .skuad-icon-button { color: white; }
+
+.registration-code-value.compact {
+    min-width: min(100%, 18rem);
+    padding: 0.55rem 0.65rem 0.55rem 0.75rem;
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+.registration-code-value.compact code {
+    color: #0f766e;
+    font-size: 0.86rem;
+}
+
+.registration-code-value.compact .skuad-icon-button {
+    color: #0f172a;
+}
+
+.registration-code-input {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: clamp(0.85rem, 3vw, 1.1rem);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+@media (max-width: 767.98px) {
+    .registration-code-reveal { align-items: stretch; flex-direction: column; }
+    .registration-code-value { min-width: 0; }
+}

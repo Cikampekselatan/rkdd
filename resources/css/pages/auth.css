@@ -1,0 +1,465 @@
+.skuad-auth-body {
+    min-height: 100vh;
+    background: white;
+}
+
+.skuad-auth-shell {
+    display: grid;
+    min-height: 100vh;
+    grid-template-columns: minmax(420px, 0.9fr) minmax(520px, 1.1fr);
+}
+
+.skuad-auth-story {
+    position: relative;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(2rem, 5vw, 4.5rem);
+    overflow: hidden;
+    color: #d9e7ef;
+    background:
+        radial-gradient(circle at 15% 20%, rgb(20 184 166 / 38%), transparent 21rem),
+        radial-gradient(circle at 90% 80%, rgb(245 158 11 / 16%), transparent 18rem),
+        var(--skuad-navy-950);
+}
+
+.skuad-auth-story::after {
+    position: absolute;
+    right: -12rem;
+    bottom: -13rem;
+    width: 30rem;
+    height: 30rem;
+    border: 1px solid rgb(255 255 255 / 12%);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4rem rgb(255 255 255 / 3%), 0 0 0 9rem rgb(255 255 255 / 2%);
+    content: '';
+}
+
+.skuad-auth-story-copy {
+    position: relative;
+    z-index: 1;
+    max-width: 42rem;
+}
+
+.skuad-auth-kicker {
+    margin-bottom: 1.25rem;
+    color: #5eead4;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.skuad-auth-story h1 {
+    max-width: 12ch;
+    margin-bottom: 1.5rem;
+    color: white;
+    font-size: clamp(2.5rem, 5vw, 5rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 1;
+}
+
+.skuad-auth-story-copy > p:last-child {
+    max-width: 34rem;
+    color: #a9bdca;
+    font-size: 1.05rem;
+    line-height: 1.75;
+}
+
+.skuad-auth-metric {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.skuad-auth-metric > span {
+    color: white;
+    font-family: var(--skuad-font-heading);
+    font-size: 3.6rem;
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 1;
+}
+
+.skuad-auth-metric p { display: grid; margin: 0; }
+.skuad-auth-metric small { color: #8fa6b7; }
+
+.skuad-auth-form-panel {
+    display: grid;
+    min-height: 100vh;
+    padding: clamp(1.5rem, 6vw, 5rem);
+    background:
+        radial-gradient(circle at 100% 0%, rgb(34 211 238 / 9%), transparent 24rem),
+        white;
+    place-items: center;
+}
+
+.skuad-auth-form-wrap {
+    width: min(100%, 31rem);
+}
+
+.skuad-auth-form-wrap h2 {
+    margin-bottom: 0.7rem;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+}
+
+.skuad-auth-lead { color: var(--skuad-muted); line-height: 1.7; }
+.skuad-auth-mobile-brand { display: none; align-items: center; gap: 0.75rem; margin-bottom: 2.5rem; color: var(--skuad-navy-950); text-decoration: none; }
+
+.skuad-auth-student-note {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 1.25rem;
+    padding: 0.9rem 1rem;
+    color: var(--skuad-muted);
+    background: #f8fafc;
+    border: 1px solid var(--skuad-border);
+    border-radius: var(--skuad-radius-md);
+}
+
+.skuad-auth-student-note > i { color: var(--skuad-info); font-size: 1.2rem; }
+.skuad-auth-student-note p { display: grid; margin: 0; }
+.skuad-auth-student-note strong { color: var(--skuad-text); font-size: 0.82rem; }
+.skuad-auth-student-note small { font-size: 0.74rem; }
+
+.skuad-auth-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1.5rem;
+    color: var(--skuad-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.skuad-auth-back:hover { color: var(--skuad-teal-700); }
+
+.skuad-auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-block: 1.25rem;
+    color: #94a3b8;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.skuad-auth-divider::before,
+.skuad-auth-divider::after {
+    height: 1px;
+    flex: 1;
+    background: var(--skuad-border);
+    content: '';
+}
+
+.btn-skuad-google {
+    min-height: 48px;
+    color: var(--skuad-navy-900);
+    background: white;
+    border: 1px solid var(--skuad-border);
+    border-radius: var(--skuad-radius-sm);
+    box-shadow: 0 8px 22px rgb(7 24 39 / 6%);
+    font-weight: 750;
+}
+
+.btn-skuad-google:hover {
+    color: var(--skuad-teal-700);
+    background: #f8fafc;
+    border-color: var(--skuad-teal-500);
+}
+
+.skuad-auth-message-shell {
+    display: grid;
+    min-height: 100vh;
+    padding: 1.5rem;
+    background:
+        radial-gradient(circle at 15% 10%, rgb(20 184 166 / 14%), transparent 26rem),
+        radial-gradient(circle at 90% 90%, rgb(34 211 238 / 10%), transparent 22rem),
+        var(--skuad-surface);
+    place-items: center;
+}
+
+.skuad-auth-message-card {
+    width: min(100%, 38rem);
+    padding: clamp(1.5rem, 5vw, 3.5rem);
+    background: white;
+    border: 1px solid var(--skuad-border);
+    border-radius: var(--skuad-radius-xl);
+    box-shadow: var(--skuad-shadow-xl);
+    text-align: center;
+}
+
+.skuad-auth-message-card h1 {
+    margin-bottom: 1rem;
+    font-size: clamp(1.8rem, 4vw, 2.7rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+}
+
+.skuad-auth-message-card > p:not(.skuad-eyebrow) { color: var(--skuad-muted); line-height: 1.7; }
+
+.skuad-auth-message-icon {
+    display: inline-grid;
+    width: 68px;
+    height: 68px;
+    margin-bottom: 1.25rem;
+    color: var(--skuad-teal-700);
+    background: var(--skuad-teal-100);
+    border-radius: 1.3rem;
+    font-size: 1.7rem;
+    place-items: center;
+}
+
+.skuad-auth-message-icon.is-danger { color: var(--skuad-danger); background: #fee2e2; }
+
+.skuad-auth-domain-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-block: 1.5rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: var(--skuad-radius-md);
+}
+
+.skuad-auth-domain-list small { width: 100%; color: var(--skuad-muted); }
+
+.skuad-auth-progress-list {
+    display: grid;
+    gap: 0.65rem;
+    margin-block: 1.5rem;
+    text-align: left;
+}
+
+.skuad-auth-progress-list span {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.9rem;
+    color: var(--skuad-muted);
+    background: #f8fafc;
+    border-radius: 0.85rem;
+}
+
+.skuad-auth-progress-list span.done { color: #166534; background: #f0fdf4; }
+
+@media (max-width: 991.98px) {
+    .skuad-auth-shell { grid-template-columns: 1fr; }
+    .skuad-auth-story { display: none; }
+    .skuad-auth-form-panel { padding-block: 3rem; }
+    .skuad-auth-mobile-brand { display: flex; }
+}
+
+.student-register-wrap {
+    max-width: 700px;
+}
+
+.student-register-preview {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.student-register-preview article {
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    padding: 0.95rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+}
+
+.student-register-preview i {
+    display: grid;
+    flex: 0 0 42px;
+    height: 42px;
+    color: #0f766e;
+    background: #ccfbf1;
+    border-radius: 0.8rem;
+    place-items: center;
+}
+
+.student-register-preview strong {
+    display: block;
+    margin-bottom: 0.15rem;
+    color: #071827;
+}
+
+.student-register-preview span {
+    display: block;
+    color: #64748b;
+    font-size: 0.88rem;
+    line-height: 1.55;
+}
+
+.student-register-form {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.student-register-form h3 {
+    margin: 1rem 0 -0.35rem;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.student-register-options {
+    display: grid;
+    gap: 0.65rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.student-register-options label {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.7rem 0.8rem;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.76);
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 1rem;
+}
+
+.student-register-page {
+    min-height: 100vh;
+    padding: clamp(1rem, 3vw, 2.5rem);
+    background:
+        radial-gradient(circle at 8% 0%, rgb(20 184 166 / 14%), transparent 26rem),
+        radial-gradient(circle at 92% 10%, rgb(245 158 11 / 10%), transparent 24rem),
+        linear-gradient(180deg, #f8fafc 0%, #eef8f6 100%);
+}
+
+.student-register-card {
+    width: min(100%, 920px);
+    margin: 0 auto;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    background: rgb(255 255 255 / 94%);
+    border: 1px solid rgb(226 232 240 / 82%);
+    border-radius: 1.6rem;
+    box-shadow: 0 28px 80px rgb(7 24 39 / 10%);
+}
+
+.student-register-brand {
+    display: inline-flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    color: #071827;
+    text-decoration: none;
+}
+
+.student-register-brand span:last-child {
+    display: grid;
+}
+
+.student-register-brand small {
+    color: #64748b;
+    font-size: 0.76rem;
+}
+
+.student-register-heading {
+    max-width: 680px;
+    margin-bottom: 1.5rem;
+}
+
+.student-register-heading h1 {
+    margin: 0 0 0.65rem;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 850;
+    letter-spacing: -0.055em;
+    line-height: 1.05;
+}
+
+.student-register-heading p:not(.skuad-eyebrow) {
+    color: #64748b;
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.student-register-section {
+    padding: clamp(1rem, 2vw, 1.35rem);
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 1.15rem;
+}
+
+.student-register-section h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.08rem;
+    font-weight: 850;
+    letter-spacing: -0.015em;
+}
+
+.student-register-section > p {
+    margin: 0 0 1rem;
+    color: #64748b;
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+.student-register-page .form-label,
+.student-register-page legend.form-label {
+    color: #071827;
+    font-size: 0.86rem;
+    font-weight: 750;
+}
+
+.student-register-page .form-control,
+.student-register-page .form-select {
+    min-height: 46px;
+    border-color: #dbe4ef;
+    border-radius: 0.85rem;
+    font-size: 0.95rem;
+}
+
+.student-register-page textarea.form-control {
+    min-height: auto;
+}
+
+.student-register-page .student-register-form {
+    gap: 1rem;
+}
+
+.student-register-page .student-register-options {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.student-register-page .student-register-options label {
+    background: #f8fafc;
+    border-color: #dbe4ef;
+    border-radius: 0.85rem;
+    font-size: 0.9rem;
+}
+
+.student-register-page .skuad-auth-student-note {
+    background: #f0fdfa;
+    border-color: #99f6e4;
+}
+
+@media (max-width: 767.98px) {
+    .student-register-page {
+        padding: 0.75rem;
+    }
+
+    .student-register-card {
+        border-radius: 1.15rem;
+    }
+
+    .student-register-heading h1 {
+        font-size: clamp(1.8rem, 10vw, 2.45rem);
+    }
+}
