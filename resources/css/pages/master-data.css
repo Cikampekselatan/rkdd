@@ -192,6 +192,14 @@
     font-weight: 800;
 }
 
+.program-institution-inline {
+    display: grid;
+    grid-template-columns: minmax(12rem, 1fr) 44px;
+    gap: 0.45rem;
+    align-items: center;
+    max-width: 22rem;
+}
+
 .program-name-cell {
     display: flex;
     align-items: center;
@@ -205,11 +213,16 @@
     height: 38px;
     flex: 0 0 auto;
     color: #fff;
-    background: linear-gradient(135deg, var(--skuad-navy-800), var(--skuad-teal-600));
+    background: #fff;
     border-radius: 12px;
     font-weight: 900;
-    object-fit: cover;
+    object-fit: contain;
     place-items: center;
+}
+
+.program-name-cell > span {
+    color: #fff;
+    background: linear-gradient(135deg, var(--skuad-navy-800), var(--skuad-teal-600));
 }
 
 .program-theme-form .form-label {

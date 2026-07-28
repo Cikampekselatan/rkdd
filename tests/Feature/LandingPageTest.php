@@ -74,6 +74,29 @@ class LandingPageTest extends TestCase
             ->assertDontSee('Karya Nonaktif');
     }
 
+    public function test_landing_program_cards_render_uploaded_logo_and_banner(): void
+    {
+        Program::query()->create([
+            'name' => 'Konten Kreator',
+            'slug' => 'konten-kreator',
+            'type' => 'pelatihan',
+            'description' => 'Program produksi konten.',
+            'primary_color' => '#7c3aed',
+            'secondary_color' => '#111827',
+            'accent_color' => '#f97316',
+            'logo_path' => 'program-logos/konten-kreator.jpg',
+            'banner_path' => 'program-banners/konten-kreator.jpg',
+            'is_active' => true,
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('public-program-banner', false)
+            ->assertSee('program-assets/1/banner')
+            ->assertSee('public-program-logo', false)
+            ->assertSee('program-assets/1/logo');
+    }
+
     public function test_student_registration_page_explains_profile_questions_before_google(): void
     {
         $batch = $this->programBatch('SKUAD Digital');

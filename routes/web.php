@@ -7,6 +7,7 @@ use App\Http\Controllers\Interaction\AnnouncementController as InteractionAnnoun
 use App\Http\Controllers\Interaction\DiscussionController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PortfolioAssetController;
+use App\Http\Controllers\ProgramAssetController;
 use App\Http\Controllers\ProgramContextController;
 use App\Http\Controllers\PublicBestWorkController;
 use App\Http\Controllers\PublicKnowledgeResourceController;
@@ -29,6 +30,7 @@ Route::delete('daftar-siswa', [StudentRegistrationController::class, 'reset'])->
 Route::get('showcase', [PublicPortfolioController::class, 'index'])->name('portfolio.public.index');
 Route::get('showcase/{portfolio_item}', [PublicPortfolioController::class, 'show'])->name('portfolio.public.show');
 Route::get('portfolio-assets/{portfolio_item}/{kind}', PortfolioAssetController::class)->name('portfolio.assets');
+Route::get('program-assets/{program}/{kind}', ProgramAssetController::class)->name('program.assets');
 
 Route::middleware(['auth', 'role:super-admin,admin,teacher,coach'])->resource('showcase-highlights', ShowcaseHighlightController::class)->except('show');
 

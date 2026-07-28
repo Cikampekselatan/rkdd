@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="theme-color" content="#071827">
         <meta name="description" content="Design system SKUAD Learning Hub.">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
         <title>@yield('title', config('app.name'))</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -32,7 +33,7 @@
             <aside class="skuad-sidebar d-none d-xl-flex" data-sidebar>
                 <div class="skuad-sidebar-header">
                     <a class="skuad-brand" href="{{ route('home') }}" aria-label="{{ $dashboardProgramTheme?->name ?? 'RKDD Cikampek Selatan' }}">
-                        <span class="brand-mark" aria-hidden="true">@if($dashboardProgramTheme?->logo_path)<img src="{{ asset('storage/'.$dashboardProgramTheme->logo_path) }}" alt="">@else{{ str($dashboardProgramTheme?->name ?? 'RKDD')->substr(0, 1)->upper() }}@endif</span>
+                        <span class="brand-mark" aria-hidden="true">@if($dashboardProgramTheme?->logo_path)<img src="{{ route('program.assets', [$dashboardProgramTheme, 'logo']) }}" alt="">@else{{ str($dashboardProgramTheme?->name ?? 'RKDD')->substr(0, 1)->upper() }}@endif</span>
                         <span class="skuad-brand-copy">
                             <strong>{{ $dashboardProgramTheme?->name ?? 'RKDD' }}</strong>
                             <small>Program aktif</small>
@@ -65,7 +66,7 @@
             <div class="offcanvas offcanvas-start skuad-offcanvas" tabindex="-1" id="tabletSidebar" aria-labelledby="tabletSidebarLabel">
                 <div class="offcanvas-header">
                     <a class="skuad-brand" href="{{ route('home') }}">
-                        <span class="brand-mark" aria-hidden="true">@if($dashboardProgramTheme?->logo_path)<img src="{{ asset('storage/'.$dashboardProgramTheme->logo_path) }}" alt="">@else{{ str($dashboardProgramTheme?->name ?? 'RKDD')->substr(0, 1)->upper() }}@endif</span>
+                        <span class="brand-mark" aria-hidden="true">@if($dashboardProgramTheme?->logo_path)<img src="{{ route('program.assets', [$dashboardProgramTheme, 'logo']) }}" alt="">@else{{ str($dashboardProgramTheme?->name ?? 'RKDD')->substr(0, 1)->upper() }}@endif</span>
                         <span class="skuad-brand-copy"><strong>{{ $dashboardProgramTheme?->name ?? 'RKDD' }}</strong><small>Program aktif</small></span>
                     </a>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>

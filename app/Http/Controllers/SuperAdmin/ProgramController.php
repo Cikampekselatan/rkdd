@@ -8,8 +8,8 @@ use App\Models\AcademicYear;
 use App\Models\Institution;
 use App\Models\Program;
 use App\Models\ProgramBatch;
-use App\Services\ProgramAssetService;
 use App\Services\PortfolioWorkTypeOptionService;
+use App\Services\ProgramAssetService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -29,13 +29,13 @@ class ProgramController extends Controller
 
     public function create(): View
     {
-        return view('super-admin.programs.create');
+        return view('super-admin.programs.create', ['program' => new Program]);
     }
 
     public function store(ProgramRequest $request, ProgramAssetService $assets): RedirectResponse
     {
-        $program = Program::query()->create($request->safe()->except(['logo', 'banner']));
-        $this->ensureDefaultBatch($program);
+        $program = Program::query()->create($request->safe()->except(['institution_name', 'logo', 'banner']));
+        $this->ensureDefaultBatch($program, $request->validated('institution_name'));
         app(PortfolioWorkTypeOptionService::class)->ensureDefaults($program);
 
         if ($request->hasFile('logo')) {
@@ -51,12 +51,15 @@ class ProgramController extends Controller
 
     public function edit(Program $program): View
     {
+        $program->load('firstBatch.institution');
+
         return view('super-admin.programs.edit', compact('program'));
     }
 
     public function update(ProgramRequest $request, Program $program, ProgramAssetService $assets): RedirectResponse
     {
-        $program->update($request->safe()->except(['logo', 'banner']));
+        $program->update($request->safe()->except(['institution_name', 'logo', 'banner']));
+        $this->syncPrimaryInstitution($program, $request->validated('institution_name'));
 
         if ($request->hasFile('logo')) {
             $assets->storeLogo($program, $request->file('logo'));
@@ -81,7 +84,7 @@ class ProgramController extends Controller
         return redirect()->route('super-admin.programs.index')->with('success', 'Program RKDD berhasil dihapus.');
     }
 
-    private function ensureDefaultBatch(Program $program): void
+    private function ensureDefaultBatch(Program $program, ?string $institutionName = null): void
     {
         if (! $program->is_active || $program->batches()->exists()) {
             return;
@@ -89,15 +92,7 @@ class ProgramController extends Controller
 
         $academicYear = AcademicYear::query()->where('is_active', true)->first()
             ?? AcademicYear::query()->orderByDesc('starts_on')->first();
-        $institution = Institution::query()->where('is_active', true)->orderBy('id')->first()
-            ?? Institution::query()->create([
-                'name' => 'RKDD Cikampek Selatan',
-                'slug' => 'rkdd-cikampek-selatan',
-                'type' => 'rkdd',
-                'address' => 'Desa Cikampek Selatan',
-                'description' => 'Lembaga default untuk program RKDD.',
-                'is_active' => true,
-            ]);
+        $institution = $this->resolveDefaultInstitution($institutionName);
 
         $periodLabel = $academicYear?->name ?? 'Batch 1';
         $audienceType = $institution->type === 'sekolah' ? 'school' : 'community';
@@ -129,5 +124,50 @@ class ProgramController extends Controller
         }
 
         return $slug;
+    }
+
+    private function resolveDefaultInstitution(?string $institutionName): Institution
+    {
+        $name = trim((string) $institutionName);
+
+        if ($name !== '') {
+            $slug = Str::slug($name) ?: 'lembaga-rkdd';
+
+            return Institution::query()->firstOrCreate(
+                ['slug' => $slug],
+                [
+                    'name' => $name,
+                    'type' => 'sekolah',
+                    'is_active' => true,
+                ],
+            );
+        }
+
+        return Institution::query()->where('is_active', true)->orderBy('id')->first()
+            ?? Institution::query()->create([
+                'name' => 'RKDD Cikampek Selatan',
+                'slug' => 'rkdd-cikampek-selatan',
+                'type' => 'rkdd',
+                'address' => 'Desa Cikampek Selatan',
+                'description' => 'Lembaga default untuk program RKDD.',
+                'is_active' => true,
+            ]);
+    }
+
+    private function syncPrimaryInstitution(Program $program, ?string $institutionName): void
+    {
+        $batch = $program->firstBatch()->first();
+
+        if (! $batch || blank($institutionName)) {
+            return;
+        }
+
+        $institution = $this->resolveDefaultInstitution($institutionName);
+        $batch->forceFill([
+            'institution_id' => $institution->id,
+            'name' => "{$program->name} {$institution->name} {$batch->period_label}",
+            'audience_type' => $institution->type === 'sekolah' ? 'school' : 'community',
+            'participant_label' => $institution->type === 'sekolah' ? 'Siswa' : 'Peserta',
+        ])->save();
     }
 }

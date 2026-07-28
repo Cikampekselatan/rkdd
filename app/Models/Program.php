@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Program extends Model
@@ -26,6 +27,11 @@ class Program extends Model
     public function batches(): HasMany
     {
         return $this->hasMany(ProgramBatch::class);
+    }
+
+    public function firstBatch(): HasOne
+    {
+        return $this->hasOne(ProgramBatch::class)->oldestOfMany();
     }
 
     public function portfolioWorkTypeOptions(): HasMany

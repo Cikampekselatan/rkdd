@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="theme-color" content="#071827">
         <meta name="description" content="Ruang Komunitas Digital Desa Cikampek Selatan untuk belajar digital, berkarya, dan mengelola program komunitas.">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 
         <title>@yield('title', config('app.name'))</title>
 

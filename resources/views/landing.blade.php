@@ -122,12 +122,21 @@
             </div>
             <div class="public-step-grid">
                 @forelse($publicPrograms as $program)
-                    <article style="--program-color: {{ $program->primary_color }}">
-                        <b>{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</b>
-                        <i class="bi bi-diagram-3" aria-hidden="true"></i>
+                    <article class="public-program-card" style="--program-color: {{ $program->primary_color }}">
+                        @if($program->banner_path)
+                            <img class="public-program-banner" src="{{ route('program.assets', [$program, 'banner']) }}" alt="Banner {{ $program->name }}">
+                        @endif
+                        <div class="public-program-body">
+                            <b>{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</b>
+                            @if($program->logo_path)
+                                <span class="public-program-logo"><img src="{{ route('program.assets', [$program, 'logo']) }}" alt="Logo {{ $program->name }}"></span>
+                            @else
+                                <i class="bi bi-diagram-3" aria-hidden="true"></i>
+                            @endif
                         <h3>{{ $program->name }}</h3>
                         <small>{{ $program->type }} · {{ $program->batches_count }} periode</small>
-                        <p>{{ $program->description ?: 'Program digital RKDD yang siap dikelola sesuai kebutuhan sekolah, komunitas, atau warga.' }}</p>
+                            <p>{{ $program->description ?: 'Program digital RKDD yang siap dikelola sesuai kebutuhan sekolah, komunitas, atau warga.' }}</p>
+                        </div>
                     </article>
                 @empty
                     @foreach($fallbackPrograms as $program)

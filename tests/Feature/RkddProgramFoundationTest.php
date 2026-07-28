@@ -49,6 +49,7 @@ class RkddProgramFoundationTest extends TestCase
             ->assertOk()
             ->assertSee('Preset cepat')
             ->assertSee('Konten Kreator')
+            ->assertSee('Nama sekolah/lembaga')
             ->assertSee('data-program-theme-preview', false)
             ->assertSee('data-program-theme-preset', false);
 
@@ -61,6 +62,7 @@ class RkddProgramFoundationTest extends TestCase
                 'primary_color' => '#7c3aed',
                 'secondary_color' => '#111827',
                 'accent_color' => '#f97316',
+                'institution_name' => 'SMP IT Mentari Ilmu Jatisari',
                 'logo' => UploadedFile::fake()->image('logo.png', 900, 900)->size(1800),
                 'banner' => UploadedFile::fake()->image('banner.png', 2400, 1200)->size(4000),
                 'is_active' => 1,
@@ -76,6 +78,7 @@ class RkddProgramFoundationTest extends TestCase
         $this->assertLessThanOrEqual(512000, Storage::disk('public')->size($program->banner_path));
         $this->assertDatabaseHas('program_batches', [
             'program_id' => $program->id,
+            'institution_id' => Institution::query()->where('slug', 'smp-it-mentari-ilmu-jatisari')->value('id'),
             'period_label' => '2026/2027',
             'is_active' => true,
         ]);
@@ -118,8 +121,35 @@ class RkddProgramFoundationTest extends TestCase
         $this->actingAs($superAdmin)
             ->get(route('super-admin.programs.index'))
             ->assertOk()
+            ->assertSee('SMP IT Mentari Ilmu Jatisari')
             ->assertSee('SMPN 1 Cikampek Selatan')
             ->assertSee('program-theme-chip', false);
+
+        $this->actingAs($superAdmin)
+            ->get(route('super-admin.programs.edit', $program))
+            ->assertOk()
+            ->assertSee('Nama sekolah/lembaga')
+            ->assertSee('SMP IT Mentari Ilmu Jatisari');
+
+        $this->actingAs($superAdmin)
+            ->put(route('super-admin.programs.update', $program), [
+                'name' => 'Konten Kreator',
+                'slug' => 'konten-kreator',
+                'type' => 'pelatihan',
+                'description' => 'Pelatihan produksi konten digital.',
+                'primary_color' => '#7c3aed',
+                'secondary_color' => '#111827',
+                'accent_color' => '#f97316',
+                'institution_name' => 'SMP IT Mentari Ilmu Jatisari Baru',
+                'is_active' => 1,
+            ])
+            ->assertRedirect(route('super-admin.programs.index'));
+
+        $this->assertDatabaseHas('institutions', ['slug' => 'smp-it-mentari-ilmu-jatisari-baru']);
+        $this->assertDatabaseHas('program_batches', [
+            'program_id' => $program->id,
+            'institution_id' => Institution::query()->where('slug', 'smp-it-mentari-ilmu-jatisari-baru')->value('id'),
+        ]);
     }
 
     public function test_program_theme_colors_must_use_safe_hex_values(): void
