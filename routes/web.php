@@ -92,3 +92,8 @@ Route::middleware(['auth', 'role:super-admin,admin,teacher,coach,principal'])->g
     ->name('design-system');
 });
 
+Route::middleware(['auth', 'role:super-admin'])->group(function (): void {
+    Route::view('/design-system', 'design-system.index')
+        ->name('design-system');
+});
+
