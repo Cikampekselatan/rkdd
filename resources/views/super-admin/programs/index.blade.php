@@ -23,7 +23,7 @@
                 <td>{{ str($program->type)->headline() }}</td>
                 <td><span class="program-theme-chip" style="--program-primary:{{ $program->primary_color }};--program-secondary:{{ $program->secondary_color }};--program-accent:{{ $program->accent_color }}"><i></i><span>Preview</span></span></td>
                 <td>
-                    @php($primaryInstitutionName = $program->batches->pluck('institution.name')->filter()->first())
+                    @php($primaryInstitutionId = (int) ($program->firstBatch?->institution_id ?? 0))
                     <form class="program-institution-inline" method="POST" action="{{ route('super-admin.programs.update', $program) }}">
                         @csrf
                         @method('PUT')
@@ -35,8 +35,13 @@
                         <input type="hidden" name="secondary_color" value="{{ $program->secondary_color }}">
                         <input type="hidden" name="accent_color" value="{{ $program->accent_color }}">
                         <input type="hidden" name="is_active" value="{{ $program->is_active ? '1' : '0' }}">
-                        <label class="visually-hidden" for="institution_name_{{ $program->id }}">Sekolah/lembaga {{ $program->name }}</label>
-                        <input class="form-control form-control-sm" id="institution_name_{{ $program->id }}" name="institution_name" value="{{ $primaryInstitutionName }}" placeholder="Isi sekolah/lembaga">
+                        <label class="visually-hidden" for="institution_id_{{ $program->id }}">Sekolah/lembaga {{ $program->name }}</label>
+                        <select class="form-select form-select-sm" id="institution_id_{{ $program->id }}" name="institution_id">
+                            <option value="">Pilih lembaga</option>
+                            @foreach($institutions as $institution)
+                                <option value="{{ $institution->id }}" @selected($primaryInstitutionId === $institution->id)>{{ $institution->name }}</option>
+                            @endforeach
+                        </select>
                         <button class="skuad-icon-button" type="submit" aria-label="Simpan sekolah/lembaga {{ $program->name }}"><i class="bi bi-check2"></i></button>
                     </form>
                     @if($program->batches_count > $program->batches->count())

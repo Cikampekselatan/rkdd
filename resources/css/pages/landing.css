@@ -398,6 +398,15 @@
     object-fit: cover;
 }
 
+.public-program-logo-fallback {
+    color: #fff;
+    background: var(--program-color, #0f766e);
+    border-color: color-mix(in srgb, var(--program-color, #0f766e) 28%, #fff);
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
 .public-step-grid b {
     color: #f59e0b;
     font-size: 0.8rem;

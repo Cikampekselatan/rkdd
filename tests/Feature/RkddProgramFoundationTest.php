@@ -38,6 +38,12 @@ class RkddProgramFoundationTest extends TestCase
             'ends_on' => '2027-06-30',
             'is_active' => true,
         ]);
+        $primaryInstitution = Institution::query()->create([
+            'name' => 'SMP IT Mentari Ilmu Jatisari',
+            'slug' => 'smp-it-mentari-ilmu-jatisari',
+            'type' => 'sekolah',
+            'is_active' => true,
+        ]);
 
         $this->actingAs($superAdmin)
             ->get(route('super-admin.programs.index'))
@@ -49,7 +55,8 @@ class RkddProgramFoundationTest extends TestCase
             ->assertOk()
             ->assertSee('Preset cepat')
             ->assertSee('Konten Kreator')
-            ->assertSee('Nama sekolah/lembaga')
+            ->assertSee('Lembaga penyelenggara')
+            ->assertSee('SMP IT Mentari Ilmu Jatisari')
             ->assertSee('data-program-theme-preview', false)
             ->assertSee('data-program-theme-preset', false);
 
@@ -62,7 +69,7 @@ class RkddProgramFoundationTest extends TestCase
                 'primary_color' => '#7c3aed',
                 'secondary_color' => '#111827',
                 'accent_color' => '#f97316',
-                'institution_name' => 'SMP IT Mentari Ilmu Jatisari',
+                'institution_id' => $primaryInstitution->id,
                 'logo' => UploadedFile::fake()->image('logo.png', 900, 900)->size(1800),
                 'banner' => UploadedFile::fake()->image('banner.png', 2400, 1200)->size(4000),
                 'is_active' => 1,
@@ -78,7 +85,7 @@ class RkddProgramFoundationTest extends TestCase
         $this->assertLessThanOrEqual(512000, Storage::disk('public')->size($program->banner_path));
         $this->assertDatabaseHas('program_batches', [
             'program_id' => $program->id,
-            'institution_id' => Institution::query()->where('slug', 'smp-it-mentari-ilmu-jatisari')->value('id'),
+            'institution_id' => $primaryInstitution->id,
             'period_label' => '2026/2027',
             'is_active' => true,
         ]);
@@ -128,8 +135,15 @@ class RkddProgramFoundationTest extends TestCase
         $this->actingAs($superAdmin)
             ->get(route('super-admin.programs.edit', $program))
             ->assertOk()
-            ->assertSee('Nama sekolah/lembaga')
+            ->assertSee('Lembaga penyelenggara')
             ->assertSee('SMP IT Mentari Ilmu Jatisari');
+
+        $updatedInstitution = Institution::query()->create([
+            'name' => 'SMP IT Mentari Ilmu Jatisari Baru',
+            'slug' => 'smp-it-mentari-ilmu-jatisari-baru',
+            'type' => 'sekolah',
+            'is_active' => true,
+        ]);
 
         $this->actingAs($superAdmin)
             ->put(route('super-admin.programs.update', $program), [
@@ -140,15 +154,14 @@ class RkddProgramFoundationTest extends TestCase
                 'primary_color' => '#7c3aed',
                 'secondary_color' => '#111827',
                 'accent_color' => '#f97316',
-                'institution_name' => 'SMP IT Mentari Ilmu Jatisari Baru',
+                'institution_id' => $updatedInstitution->id,
                 'is_active' => 1,
             ])
             ->assertRedirect(route('super-admin.programs.index'));
 
-        $this->assertDatabaseHas('institutions', ['slug' => 'smp-it-mentari-ilmu-jatisari-baru']);
         $this->assertDatabaseHas('program_batches', [
             'program_id' => $program->id,
-            'institution_id' => Institution::query()->where('slug', 'smp-it-mentari-ilmu-jatisari-baru')->value('id'),
+            'institution_id' => $updatedInstitution->id,
         ]);
     }
 
@@ -313,6 +326,90 @@ class RkddProgramFoundationTest extends TestCase
             ->assertSessionHasErrors('program');
 
         $this->assertDatabaseHas('programs', ['id' => $program->id, 'deleted_at' => null]);
+    }
+
+    public function test_each_program_keeps_only_one_active_batch_without_affecting_other_programs(): void
+    {
+        $superAdmin = User::factory()->withRole(RoleSlug::SuperAdmin)->create();
+        $institution = Institution::query()->create([
+            'name' => 'SMP IT Mentari Ilmu Jatisari',
+            'slug' => 'smp-it-mentari-ilmu-jatisari',
+            'type' => 'sekolah',
+            'is_active' => true,
+        ]);
+        $skuad = Program::query()->create([
+            'name' => 'SKUAD',
+            'slug' => 'skuad',
+            'type' => 'ekstrakurikuler',
+            'primary_color' => '#0f766e',
+            'secondary_color' => '#0f172a',
+            'accent_color' => '#f59e0b',
+            'is_active' => true,
+        ]);
+        $contentCore = Program::query()->create([
+            'name' => 'Content Core',
+            'slug' => 'content-core',
+            'type' => 'pelatihan',
+            'primary_color' => '#7c3aed',
+            'secondary_color' => '#1e1b4b',
+            'accent_color' => '#f97316',
+            'is_active' => true,
+        ]);
+        $skuadBatch = ProgramBatch::query()->create([
+            'program_id' => $skuad->id,
+            'institution_id' => $institution->id,
+            'name' => 'SKUAD 2026/2027',
+            'slug' => 'skuad-2026-2027',
+            'period_label' => '2026/2027',
+            'audience_type' => 'school',
+            'participant_label' => 'Siswa',
+            'is_active' => true,
+        ]);
+        $contentBatch = ProgramBatch::query()->create([
+            'program_id' => $contentCore->id,
+            'institution_id' => $institution->id,
+            'name' => 'Content Core',
+            'slug' => 'content-core',
+            'period_label' => 'Batch 1',
+            'audience_type' => 'school',
+            'participant_label' => 'Siswa',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($superAdmin)
+            ->post(route('super-admin.program-batches.store'), [
+                'program_id' => $skuad->id,
+                'institution_id' => $institution->id,
+                'name' => 'SKUAD 2027/2028',
+                'slug' => '',
+                'period_label' => '2027/2028',
+                'starts_on' => '2027-07-01',
+                'ends_on' => '2028-06-30',
+                'audience_type' => 'school',
+                'participant_label' => 'Siswa',
+                'is_active' => 1,
+            ])
+            ->assertRedirect(route('super-admin.program-batches.index'));
+
+        $this->assertFalse($skuadBatch->fresh()->is_active);
+        $this->assertTrue($contentBatch->fresh()->is_active);
+        $this->assertSame(1, ProgramBatch::query()->where('program_id', $skuad->id)->where('is_active', true)->count());
+        $this->assertSame(1, ProgramBatch::query()->where('program_id', $contentCore->id)->where('is_active', true)->count());
+
+        $this->actingAs($superAdmin)
+            ->put(route('super-admin.program-batches.update', $contentBatch), [
+                'program_id' => $contentCore->id,
+                'institution_id' => $institution->id,
+                'name' => 'Content Core',
+                'slug' => 'content-core',
+                'period_label' => 'Batch 1',
+                'starts_on' => '2026-07-27',
+                'ends_on' => '2027-07-07',
+                'audience_type' => 'school',
+                'participant_label' => 'Siswa',
+                'is_active' => 0,
+            ])
+            ->assertSessionHasErrors('is_active');
     }
 
     public function test_active_program_context_filters_core_operational_pages(): void

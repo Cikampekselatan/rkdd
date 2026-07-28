@@ -122,6 +122,14 @@
             </div>
             <div class="public-step-grid">
                 @forelse($publicPrograms as $program)
+                    @php
+                        $programInitials = str($program->name)
+                            ->explode(' ')
+                            ->filter()
+                            ->take(2)
+                            ->map(fn ($word) => str($word)->substr(0, 1)->upper())
+                            ->implode('');
+                    @endphp
                     <article class="public-program-card" style="--program-color: {{ $program->primary_color }}">
                         @if($program->banner_path)
                             <img class="public-program-banner" src="{{ route('program.assets', [$program, 'banner']) }}" alt="Banner {{ $program->name }}">
@@ -131,7 +139,7 @@
                             @if($program->logo_path)
                                 <span class="public-program-logo"><img src="{{ route('program.assets', [$program, 'logo']) }}" alt="Logo {{ $program->name }}"></span>
                             @else
-                                <i class="bi bi-diagram-3" aria-hidden="true"></i>
+                                <span class="public-program-logo public-program-logo-fallback" aria-hidden="true">{{ $programInitials ?: 'R' }}</span>
                             @endif
                         <h3>{{ $program->name }}</h3>
                         <small>{{ $program->type }} · {{ $program->batches_count }} periode</small>

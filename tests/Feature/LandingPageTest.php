@@ -97,6 +97,25 @@ class LandingPageTest extends TestCase
             ->assertSee('program-assets/1/logo');
     }
 
+    public function test_landing_program_cards_show_fallback_logo_mark_when_logo_is_missing(): void
+    {
+        Program::query()->create([
+            'name' => 'Content Core',
+            'slug' => 'content-core',
+            'type' => 'ekstrakurikuler',
+            'description' => 'Program produksi konten.',
+            'primary_color' => '#0f766e',
+            'secondary_color' => '#111827',
+            'accent_color' => '#f97316',
+            'is_active' => true,
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('public-program-logo-fallback', false)
+            ->assertSee('CC');
+    }
+
     public function test_student_registration_page_explains_profile_questions_before_google(): void
     {
         $batch = $this->programBatch('SKUAD Digital');

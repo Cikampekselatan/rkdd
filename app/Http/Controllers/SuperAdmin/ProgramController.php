@@ -19,8 +19,9 @@ class ProgramController extends Controller
     public function index(): View
     {
         return view('super-admin.programs.index', [
+            'institutions' => $this->activeInstitutions(),
             'programs' => Program::query()
-                ->with(['batches' => fn ($query) => $query->with('institution')->latest()->limit(4)])
+                ->with(['firstBatch.institution', 'batches' => fn ($query) => $query->with('institution')->latest()->limit(4)])
                 ->withCount('batches')
                 ->latest()
                 ->paginate(15),
@@ -29,13 +30,16 @@ class ProgramController extends Controller
 
     public function create(): View
     {
-        return view('super-admin.programs.create', ['program' => new Program]);
+        return view('super-admin.programs.create', [
+            'institutions' => $this->activeInstitutions(),
+            'program' => new Program,
+        ]);
     }
 
     public function store(ProgramRequest $request, ProgramAssetService $assets): RedirectResponse
     {
-        $program = Program::query()->create($request->safe()->except(['institution_name', 'logo', 'banner']));
-        $this->ensureDefaultBatch($program, $request->validated('institution_name'));
+        $program = Program::query()->create($request->safe()->except(['institution_id', 'logo', 'banner']));
+        $this->ensureDefaultBatch($program, $request->validated('institution_id'));
         app(PortfolioWorkTypeOptionService::class)->ensureDefaults($program);
 
         if ($request->hasFile('logo')) {
@@ -53,13 +57,16 @@ class ProgramController extends Controller
     {
         $program->load('firstBatch.institution');
 
-        return view('super-admin.programs.edit', compact('program'));
+        return view('super-admin.programs.edit', [
+            'institutions' => $this->activeInstitutions(),
+            'program' => $program,
+        ]);
     }
 
     public function update(ProgramRequest $request, Program $program, ProgramAssetService $assets): RedirectResponse
     {
-        $program->update($request->safe()->except(['institution_name', 'logo', 'banner']));
-        $this->syncPrimaryInstitution($program, $request->validated('institution_name'));
+        $program->update($request->safe()->except(['institution_id', 'logo', 'banner']));
+        $this->syncPrimaryInstitution($program, $request->validated('institution_id'));
 
         if ($request->hasFile('logo')) {
             $assets->storeLogo($program, $request->file('logo'));
@@ -84,7 +91,7 @@ class ProgramController extends Controller
         return redirect()->route('super-admin.programs.index')->with('success', 'Program RKDD berhasil dihapus.');
     }
 
-    private function ensureDefaultBatch(Program $program, ?string $institutionName = null): void
+    private function ensureDefaultBatch(Program $program, ?int $institutionId = null): void
     {
         if (! $program->is_active || $program->batches()->exists()) {
             return;
@@ -92,7 +99,7 @@ class ProgramController extends Controller
 
         $academicYear = AcademicYear::query()->where('is_active', true)->first()
             ?? AcademicYear::query()->orderByDesc('starts_on')->first();
-        $institution = $this->resolveDefaultInstitution($institutionName);
+        $institution = $this->resolveDefaultInstitution($institutionId);
 
         $periodLabel = $academicYear?->name ?? 'Batch 1';
         $audienceType = $institution->type === 'sekolah' ? 'school' : 'community';
@@ -126,21 +133,17 @@ class ProgramController extends Controller
         return $slug;
     }
 
-    private function resolveDefaultInstitution(?string $institutionName): Institution
+    private function resolveDefaultInstitution(?int $institutionId): Institution
     {
-        $name = trim((string) $institutionName);
+        if ($institutionId) {
+            $institution = Institution::query()
+                ->whereKey($institutionId)
+                ->where('is_active', true)
+                ->first();
 
-        if ($name !== '') {
-            $slug = Str::slug($name) ?: 'lembaga-rkdd';
-
-            return Institution::query()->firstOrCreate(
-                ['slug' => $slug],
-                [
-                    'name' => $name,
-                    'type' => 'sekolah',
-                    'is_active' => true,
-                ],
-            );
+            if ($institution) {
+                return $institution;
+            }
         }
 
         return Institution::query()->where('is_active', true)->orderBy('id')->first()
@@ -154,20 +157,34 @@ class ProgramController extends Controller
             ]);
     }
 
-    private function syncPrimaryInstitution(Program $program, ?string $institutionName): void
+    private function syncPrimaryInstitution(Program $program, ?int $institutionId): void
     {
         $batch = $program->firstBatch()->first();
 
-        if (! $batch || blank($institutionName)) {
+        if (! $batch) {
+            $this->ensureDefaultBatch($program, $institutionId);
+
             return;
         }
 
-        $institution = $this->resolveDefaultInstitution($institutionName);
+        if (! $institutionId) {
+            return;
+        }
+
+        $institution = $this->resolveDefaultInstitution($institutionId);
         $batch->forceFill([
             'institution_id' => $institution->id,
             'name' => "{$program->name} {$institution->name} {$batch->period_label}",
             'audience_type' => $institution->type === 'sekolah' ? 'school' : 'community',
             'participant_label' => $institution->type === 'sekolah' ? 'Siswa' : 'Peserta',
         ])->save();
+    }
+
+    private function activeInstitutions()
+    {
+        return Institution::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'type']);
     }
 }

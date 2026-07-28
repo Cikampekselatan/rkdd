@@ -24,7 +24,7 @@ class ProgramRequest extends FormRequest
             'primary_color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'secondary_color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'accent_color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
-            'institution_name' => ['nullable', 'string', 'max:160'],
+            'institution_id' => ['nullable', 'integer', Rule::exists('institutions', 'id')->whereNull('deleted_at')->where('is_active', true)],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'is_active' => ['required', 'boolean'],
@@ -35,7 +35,7 @@ class ProgramRequest extends FormRequest
     {
         $this->merge([
             'slug' => Str::slug($this->input('slug') ?: $this->input('name')),
-            'institution_name' => trim((string) $this->input('institution_name')),
+            'institution_id' => $this->filled('institution_id') ? (int) $this->input('institution_id') : null,
             'is_active' => $this->boolean('is_active'),
         ]);
     }

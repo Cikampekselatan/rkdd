@@ -9,6 +9,7 @@ use App\Models\Institution;
 use App\Models\Program;
 use App\Models\ProgramBatch;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ProgramBatchController extends Controller
@@ -33,7 +34,10 @@ class ProgramBatchController extends Controller
 
     public function store(ProgramBatchRequest $request): RedirectResponse
     {
-        ProgramBatch::query()->create($request->validated());
+        DB::transaction(function () use ($request): void {
+            $batch = ProgramBatch::query()->create($request->validated());
+            $this->syncActiveBatchForProgram($batch);
+        });
 
         return redirect()->route('super-admin.program-batches.index')->with('success', 'Batch/periode program berhasil dibuat.');
     }
@@ -48,7 +52,14 @@ class ProgramBatchController extends Controller
 
     public function update(ProgramBatchRequest $request, ProgramBatch $programBatch): RedirectResponse
     {
-        $programBatch->update($request->validated());
+        if (! $request->boolean('is_active') && $this->isLastActiveBatchForProgram($programBatch)) {
+            return back()->withErrors(['is_active' => 'Minimal harus ada satu batch/periode aktif untuk program ini. Aktifkan batch lain terlebih dahulu.']);
+        }
+
+        DB::transaction(function () use ($request, $programBatch): void {
+            $programBatch->update($request->validated());
+            $this->syncActiveBatchForProgram($programBatch);
+        });
 
         return redirect()->route('super-admin.program-batches.index')->with('success', 'Batch/periode program berhasil diperbarui.');
     }
@@ -92,5 +103,31 @@ class ProgramBatchController extends Controller
             'participant_label' => $institution?->type === 'sekolah' ? 'Siswa' : 'Peserta',
             'is_active' => true,
         ]);
+    }
+
+    private function syncActiveBatchForProgram(ProgramBatch $batch): void
+    {
+        if (! $batch->is_active) {
+            return;
+        }
+
+        ProgramBatch::query()
+            ->where('program_id', $batch->program_id)
+            ->whereKeyNot($batch->id)
+            ->where('is_active', true)
+            ->update(['is_active' => false]);
+    }
+
+    private function isLastActiveBatchForProgram(ProgramBatch $batch): bool
+    {
+        if (! $batch->is_active) {
+            return false;
+        }
+
+        return ProgramBatch::query()
+            ->where('program_id', $batch->program_id)
+            ->where('is_active', true)
+            ->whereKeyNot($batch->id)
+            ->doesntExist();
     }
 }

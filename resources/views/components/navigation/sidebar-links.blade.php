@@ -29,9 +29,15 @@
 
     @if ($navigationUser->hasAnyRole([\App\Enums\RoleSlug::SuperAdmin, \App\Enums\RoleSlug::Admin]))
         <p class="skuad-nav-label mt-4">Master data</p>
-        <a class="skuad-nav-link {{ request()->routeIs('admin.academic-years.*') ? 'active' : '' }}" href="{{ route('admin.academic-years.index') }}">
-            <i class="bi bi-calendar3" aria-hidden="true"></i><span>Periode Program</span>
-        </a>
+        @if ($navigationUser->hasRole(\App\Enums\RoleSlug::SuperAdmin))
+            <a class="skuad-nav-link {{ request()->routeIs('super-admin.program-batches.*') ? 'active' : '' }}" href="{{ route('super-admin.program-batches.index') }}">
+                <i class="bi bi-calendar3" aria-hidden="true"></i><span>Periode Program</span>
+            </a>
+        @else
+            <a class="skuad-nav-link {{ request()->routeIs('admin.academic-years.*') ? 'active' : '' }}" href="{{ route('admin.academic-years.index') }}">
+                <i class="bi bi-calendar3" aria-hidden="true"></i><span>Tahun Ajaran</span>
+            </a>
+        @endif
         <a class="skuad-nav-link {{ request()->routeIs('admin.classes.*') ? 'active' : '' }}" href="{{ route('admin.classes.index') }}">
             <i class="bi bi-people" aria-hidden="true"></i><span>{{ $navigationGroupLabel }}</span>
         </a>
