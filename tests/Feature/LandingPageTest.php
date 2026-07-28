@@ -116,6 +116,32 @@ class LandingPageTest extends TestCase
             ->assertSee('CC');
     }
 
+    public function test_missing_program_asset_files_return_svg_placeholders(): void
+    {
+        $program = Program::query()->create([
+            'name' => 'Content Core',
+            'slug' => 'content-core',
+            'type' => 'ekstrakurikuler',
+            'description' => 'Program produksi konten.',
+            'primary_color' => '#0f766e',
+            'secondary_color' => '#111827',
+            'accent_color' => '#f97316',
+            'logo_path' => 'program-logos/missing.jpg',
+            'banner_path' => 'program-banners/missing.jpg',
+            'is_active' => true,
+        ]);
+
+        $this->get(route('program.assets', [$program, 'logo']))
+            ->assertOk()
+            ->assertHeader('content-type', 'image/svg+xml')
+            ->assertSee('CC', false);
+
+        $this->get(route('program.assets', [$program, 'banner']))
+            ->assertOk()
+            ->assertHeader('content-type', 'image/svg+xml')
+            ->assertSee('Content Core', false);
+    }
+
     public function test_student_registration_page_explains_profile_questions_before_google(): void
     {
         $batch = $this->programBatch('SKUAD Digital');
