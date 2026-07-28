@@ -31,9 +31,6 @@ Route::middleware(['auth', 'role:super-admin'])->group(function (): void {
         Route::put('profile-video', [LandingProfileVideoController::class, 'update'])->name('profile-video.update');
     });
 
-    Route::get('/design-system', function () {
-        abort_unless(app()->environment(['local', 'testing']), 404);
-
-        return view('design-system.index');
-    })->name('super-admin.design-system');
+    Route::view('/design-system', 'design-system.index')
+        ->name('super-admin.design-system');
 });
