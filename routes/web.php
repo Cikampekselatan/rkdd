@@ -88,4 +88,7 @@ Route::middleware(['auth', 'role:super-admin,admin,teacher,coach,principal'])->g
     Route::post('important-notes/{important_note}/sign', [ImportantNoteController::class, 'sign'])->name('important-notes.sign');
     Route::get('important-notes/{important_note}/print', [ImportantNoteController::class, 'print'])->name('important-notes.print');
     Route::get('important-notes/{important_note}/initial/{role}', [ImportantNoteController::class, 'initial'])->name('important-notes.initial');
+    Route::view('/design-system', 'design-system.index')
+    ->name('design-system');
 });
+
