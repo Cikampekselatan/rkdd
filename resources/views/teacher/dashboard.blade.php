@@ -6,6 +6,14 @@
     $teacherProgramContext = app(\App\Services\ProgramContextService::class);
     $teacherParticipantLabel = $teacherProgramContext->participantLabel(auth()->user());
     $teacherActiveBatch = $teacherProgramContext->activeBatch(auth()->user());
+    if ($teacherActiveBatch) {
+        $year = (object) [
+            'id' => $year?->id ?? $teacherActiveBatch->id,
+            'name' => $teacherActiveBatch->period_label ?? $teacherActiveBatch->name,
+            'is_active' => true,
+        ];
+        $years = collect([$year]);
+    }
     $attendanceMax = max(1, ...array_values($charts['attendance'] ?: [0]));
     $gradeMax = max(1, ...array_values($charts['grades'] ?: [0]));
     $competencyMax = max(1, ...array_values($charts['competencies'] ?: [0]));
