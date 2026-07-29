@@ -132,12 +132,12 @@
                     @endphp
                     <article class="public-program-card" style="--program-color: {{ $program->primary_color }}">
                         @if($program->banner_path)
-                            <img class="public-program-banner" src="{{ route('program.assets', [$program, 'banner']) }}" alt="Banner {{ $program->name }}">
+                            <img class="public-program-banner" src="{{ route('program.assets', [$program, 'banner', 'v' => $program->updated_at?->timestamp]) }}" alt="Banner {{ $program->name }}">
                         @endif
                         <div class="public-program-body">
                             <b>{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</b>
                             @if($program->logo_path)
-                                <span class="public-program-logo"><img src="{{ route('program.assets', [$program, 'logo']) }}" alt="Logo {{ $program->name }}"></span>
+                                <span class="public-program-logo"><img src="{{ route('program.assets', [$program, 'logo', 'v' => $program->updated_at?->timestamp]) }}" alt="Logo {{ $program->name }}"></span>
                             @else
                                 <span class="public-program-logo public-program-logo-fallback" aria-hidden="true">{{ $programInitials ?: 'R' }}</span>
                             @endif

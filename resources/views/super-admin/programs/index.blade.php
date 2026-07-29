@@ -19,7 +19,7 @@
     <tbody>
         @forelse($programs as $program)
             <tr>
-                <td><div class="program-name-cell">@if($program->logo_path)<img src="{{ route('program.assets', [$program, 'logo']) }}" alt="" aria-hidden="true">@else<span>{{ str($program->name)->substr(0, 1)->upper() }}</span>@endif<div><strong>{{ $program->name }}</strong><small class="d-block text-muted">{{ $program->slug }}</small></div></div></td>
+                <td><div class="program-name-cell">@if($program->logo_path)<img src="{{ route('program.assets', [$program, 'logo', 'v' => $program->updated_at?->timestamp]) }}" alt="" aria-hidden="true">@else<span>{{ str($program->name)->substr(0, 1)->upper() }}</span>@endif<div><strong>{{ $program->name }}</strong><small class="d-block text-muted">{{ $program->slug }}</small></div></div></td>
                 <td>{{ str($program->type)->headline() }}</td>
                 <td><span class="program-theme-chip" style="--program-primary:{{ $program->primary_color }};--program-secondary:{{ $program->secondary_color }};--program-accent:{{ $program->accent_color }}"><i></i><span>Preview</span></span></td>
                 <td>

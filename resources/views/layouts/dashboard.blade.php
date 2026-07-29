@@ -33,7 +33,7 @@
             <aside class="skuad-sidebar d-none d-xl-flex" data-sidebar>
                 <div class="skuad-sidebar-header">
                     <a class="skuad-brand" href="{{ route('home') }}" aria-label="{{ $dashboardProgramTheme?->name ?? 'RKDD Cikampek Selatan' }}">
-                        <span class="brand-mark" aria-hidden="true">@if($dashboardProgramTheme?->logo_path)<img src="{{ route('program.assets', [$dashboardProgramTheme, 'logo']) }}" alt="">@else{{ str($dashboardProgramTheme?->name ?? 'RKDD')->substr(0, 1)->upper() }}@endif</span>
+                        <span class="brand-mark" aria-hidden="true">@if($dashboardProgramTheme?->logo_path)<img src="{{ route('program.assets', [$dashboardProgramTheme, 'logo', 'v' => $dashboardProgramTheme->updated_at?->timestamp]) }}" alt="">@else{{ str($dashboardProgramTheme?->name ?? 'RKDD')->substr(0, 1)->upper() }}@endif</span>
                         <span class="skuad-brand-copy">
                             <strong>{{ $dashboardProgramTheme?->name ?? 'RKDD' }}</strong>
                             <small>Program aktif</small>
@@ -66,7 +66,7 @@
             <div class="offcanvas offcanvas-start skuad-offcanvas" tabindex="-1" id="tabletSidebar" aria-labelledby="tabletSidebarLabel">
                 <div class="offcanvas-header">
                     <a class="skuad-brand" href="{{ route('home') }}">
-                        <span class="brand-mark" aria-hidden="true">@if($dashboardProgramTheme?->logo_path)<img src="{{ route('program.assets', [$dashboardProgramTheme, 'logo']) }}" alt="">@else{{ str($dashboardProgramTheme?->name ?? 'RKDD')->substr(0, 1)->upper() }}@endif</span>
+                        <span class="brand-mark" aria-hidden="true">@if($dashboardProgramTheme?->logo_path)<img src="{{ route('program.assets', [$dashboardProgramTheme, 'logo', 'v' => $dashboardProgramTheme->updated_at?->timestamp]) }}" alt="">@else{{ str($dashboardProgramTheme?->name ?? 'RKDD')->substr(0, 1)->upper() }}@endif</span>
                         <span class="skuad-brand-copy"><strong>{{ $dashboardProgramTheme?->name ?? 'RKDD' }}</strong><small>Program aktif</small></span>
                     </a>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
