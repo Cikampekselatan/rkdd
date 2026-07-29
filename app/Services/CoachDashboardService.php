@@ -29,6 +29,7 @@ class CoachDashboardService
         $notesWaiting = ImportantNote::query()
             ->with('creator:id,name')
             ->where('academic_year_id', $year->id)
+            ->when(request()->user(), fn ($query, $user) => $query->when(app(ProgramContextService::class)->activeBatchId($user), fn ($query, int $batchId) => $query->where('program_batch_id', $batchId)))
             ->whereNull('coach_initialed_at')
             ->where('status', '!=', ImportantNoteStatus::Verified)
             ->latest('note_date')
@@ -37,6 +38,7 @@ class CoachDashboardService
 
         $visibleProjects = PortfolioItem::query()
             ->where('academic_year_id', $year->id)
+            ->when(request()->user(), fn ($query, $user) => $query->when(app(ProgramContextService::class)->activeBatchId($user), fn ($query, int $batchId) => $query->where('program_batch_id', $batchId)))
             ->where('approval_status', PortfolioApprovalStatus::Approved)
             ->whereIn('visibility', [PortfolioVisibility::ClassRoom, PortfolioVisibility::School, PortfolioVisibility::PublicApproved]);
 

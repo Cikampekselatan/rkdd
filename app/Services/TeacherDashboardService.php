@@ -25,9 +25,10 @@ class TeacherDashboardService
 {
     public function build(?int $yearId = null): array
     {
-        $years = AcademicYear::query()->orderByDesc('starts_on')->get();
-        $year = $years->firstWhere('id', $yearId) ?? $years->firstWhere('is_active', true) ?? $years->first();
         $activeBatchId = request()->user() ? app(ProgramContextService::class)->activeBatchId(request()->user()) : null;
+        $years = $this->yearsForActiveBatch($activeBatchId);
+        $year = $years->firstWhere('id', $yearId) ?? $years->firstWhere('is_active', true) ?? $years->first();
+
         if (! $year) {
             return $this->empty($years);
         }
@@ -118,5 +119,18 @@ class TeacherDashboardService
     private function empty($years): array
     {
         return ['years' => $years, 'year' => null, 'kpis' => array_fill_keys(['active_students', 'new_registrations', 'onboarding', 'sessions_completed', 'ungraded', 'revisions', 'attendance_rate', 'open_notes', 'pending_teacher_logs'], 0), 'attentionStudents' => collect(), 'charts' => ['attendance' => [], 'grades' => [], 'competencies' => [], 'progress' => ['completed' => 0, 'visible' => 0, 'total' => 0]], 'recentNotes' => collect(), 'pendingLogs' => collect()];
+    }
+
+    private function yearsForActiveBatch(?int $activeBatchId)
+    {
+        return AcademicYear::query()
+            ->when($activeBatchId, fn ($query, int $batchId) => $query->where(function ($query) use ($batchId): void {
+                $query->whereHas('classes', fn ($classes) => $classes->where('program_batch_id', $batchId))
+                    ->orWhereHas('registrationCodes', fn ($codes) => $codes->where('program_batch_id', $batchId))
+                    ->orWhereHas('learningModules', fn ($modules) => $modules->where('program_batch_id', $batchId))
+                    ->orWhereHas('learningSessions', fn ($sessions) => $sessions->where('program_batch_id', $batchId));
+            }))
+            ->orderByDesc('starts_on')
+            ->get();
     }
 }
