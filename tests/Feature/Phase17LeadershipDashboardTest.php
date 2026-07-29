@@ -268,6 +268,11 @@ class Phase17LeadershipDashboardTest extends TestCase
             'program_batch_id' => $contentBatch->id,
             'name' => 'Kelompok Content Core Modul',
         ]);
+        SchoolClass::factory()->create([
+            'academic_year_id' => $contentYear->id,
+            'program_batch_id' => $skuadBatch->id,
+            'name' => 'Kelompok Salah Taut Modul',
+        ]);
         $coach = User::factory()->withRole(RoleSlug::Coach)->create(['name' => 'Andi Apriandi ST.']);
         $coach->assignedProgramBatches()->attach($skuadBatch, ['assigned_by' => $coach->id]);
 
