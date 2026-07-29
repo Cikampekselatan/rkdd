@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Teacher;
 
 use App\Models\Rubric;
+use App\Services\ProgramContextService;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class RubricRequest extends FormRequest
@@ -17,7 +19,7 @@ class RubricRequest extends FormRequest
 
     public function rules(): array
     {
-        return ['academic_year_id' => ['nullable', 'exists:academic_years,id'], 'name' => ['required', 'string', 'max:255'], 'description' => ['nullable', 'string', 'max:5000'], 'is_active' => ['nullable', 'boolean'], 'criteria' => ['required', 'array', 'min:1', 'max:8'], 'criteria.*.name' => ['required', 'string', 'max:255'], 'criteria.*.description' => ['nullable', 'string', 'max:2000'], 'criteria.*.weight' => ['required', 'numeric', 'min:0.01', 'max:100'], 'criteria.*.levels' => ['required', 'array', 'size:4'], 'criteria.*.levels.*' => ['required', 'string', 'max:2000']];
+        return ['academic_year_id' => ['nullable', Rule::in(app(ProgramContextService::class)->academicYears($this->user(), ['id'])->pluck('id')->all())], 'name' => ['required', 'string', 'max:255'], 'description' => ['nullable', 'string', 'max:5000'], 'is_active' => ['nullable', 'boolean'], 'criteria' => ['required', 'array', 'min:1', 'max:8'], 'criteria.*.name' => ['required', 'string', 'max:255'], 'criteria.*.description' => ['nullable', 'string', 'max:2000'], 'criteria.*.weight' => ['required', 'numeric', 'min:0.01', 'max:100'], 'criteria.*.levels' => ['required', 'array', 'size:4'], 'criteria.*.levels.*' => ['required', 'string', 'max:2000']];
     }
 
     public function after(): array

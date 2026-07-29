@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Staff;
 
 use App\Models\TeacherActivityLog;
+use App\Services\ProgramContextService;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class TeacherActivityLogRequest extends FormRequest
@@ -19,7 +21,7 @@ class TeacherActivityLogRequest extends FormRequest
     {
         $log = $this->route('teacher_activity_log');
 
-        return ['academic_year_id' => ['required', 'exists:academic_years,id'], 'activity_date' => ['required', 'date', 'before_or_equal:today'], 'material' => ['required', 'string', 'max:5000'], 'activities' => ['required', 'string', 'max:20000'], 'assignment' => ['nullable', 'string', 'max:5000'], 'signature' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'], 'signature_drawn' => ['nullable', 'string', 'max:300000', 'regex:/^data:image\/png;base64,/'], 'submit_now' => ['nullable', 'boolean']];
+        return ['academic_year_id' => ['required', Rule::in(app(ProgramContextService::class)->academicYears($this->user(), ['id'])->pluck('id')->all())], 'activity_date' => ['required', 'date', 'before_or_equal:today'], 'material' => ['required', 'string', 'max:5000'], 'activities' => ['required', 'string', 'max:20000'], 'assignment' => ['nullable', 'string', 'max:5000'], 'signature' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'], 'signature_drawn' => ['nullable', 'string', 'max:300000', 'regex:/^data:image\/png;base64,/'], 'submit_now' => ['nullable', 'boolean']];
     }
 
     public function after(): array

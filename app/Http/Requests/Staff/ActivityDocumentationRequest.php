@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Staff;
 
 use App\Models\ActivityDocumentation;
+use App\Services\ProgramContextService;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class ActivityDocumentationRequest extends FormRequest
@@ -20,7 +22,7 @@ class ActivityDocumentationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'academic_year_id' => ['required', 'exists:academic_years,id'],
+            'academic_year_id' => ['required', Rule::in(app(ProgramContextService::class)->academicYears($this->user(), ['id'])->pluck('id')->all())],
             'activity_date' => ['required', 'date', 'before_or_equal:today'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:20000'],

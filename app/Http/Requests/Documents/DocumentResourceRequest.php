@@ -7,6 +7,7 @@ use App\Enums\DocumentAudience;
 use App\Enums\DocumentCategory;
 use App\Models\DocumentResource;
 use App\Services\GoogleDriveUrlParser;
+use App\Services\ProgramContextService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -27,7 +28,7 @@ class DocumentResourceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'academic_year_id' => ['nullable', 'exists:academic_years,id'],
+            'academic_year_id' => ['nullable', Rule::in(app(ProgramContextService::class)->academicYears($this->user(), ['id'])->pluck('id')->all())],
             'title' => ['required', 'string', 'max:255'],
             'category' => ['required', Rule::enum(DocumentCategory::class)],
             'description' => ['nullable', 'string', 'max:5000'],

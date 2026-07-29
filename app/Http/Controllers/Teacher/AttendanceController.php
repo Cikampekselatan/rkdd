@@ -13,7 +13,6 @@ use App\Http\Requests\Teacher\AmendAttendanceRecordRequest;
 use App\Http\Requests\Teacher\AttendanceIndexRequest;
 use App\Http\Requests\Teacher\OpenAttendanceSessionRequest;
 use App\Http\Requests\Teacher\SaveBulkAttendanceRequest;
-use App\Models\AcademicYear;
 use App\Models\AttendanceRecord;
 use App\Models\AttendanceSession;
 use App\Models\LearningSession;
@@ -29,15 +28,18 @@ class AttendanceController extends Controller
     public function index(AttendanceIndexRequest $request, AttendanceSummaryService $summaries): View
     {
         $filters = $request->validated();
-        $activeBatchId = app(ProgramContextService::class)->activeBatchId($request->user());
-        $academicYears = AcademicYear::query()->orderByDesc('is_active')->orderByDesc('starts_on')->get(['id', 'name', 'is_active']);
+        $programContext = app(ProgramContextService::class);
+        $activeBatchId = $programContext->activeBatchId($request->user());
+        $academicYears = $programContext->academicYears($request->user(), ['id', 'name', 'is_active']);
         $academicYearId = isset($filters['academic_year_id']) ? (int) $filters['academic_year_id'] : $academicYears->first()?->id;
         $classes = SchoolClass::query()
             ->when($academicYearId, fn ($query, int $year) => $query->where('academic_year_id', $year))
             ->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))
             ->where('is_active', true)
             ->orderBy('grade_level')->orderBy('name')->get(['id', 'academic_year_id', 'name']);
-        $classId = isset($filters['class_id']) ? (int) $filters['class_id'] : $classes->first()?->id;
+        $classId = isset($filters['class_id'])
+            ? $classes->firstWhere('id', (int) $filters['class_id'])?->id
+            : $classes->first()?->id;
         $sessions = AttendanceSession::query()
             ->with(['learningSession:id,session_number,title', 'schoolClass:id,name', 'records:id,attendance_session_id,status'])
             ->when($academicYearId, fn ($query, int $year) => $query->where('academic_year_id', $year))

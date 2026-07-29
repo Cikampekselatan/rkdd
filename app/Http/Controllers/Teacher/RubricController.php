@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teacher\RubricRequest;
-use App\Models\AcademicYear;
 use App\Models\Rubric;
 use App\Services\ProgramContextService;
 use App\Services\RubricService;
@@ -30,7 +29,7 @@ class RubricController extends Controller
     {
         $this->authorize('create', Rubric::class);
 
-        return view('teacher.rubrics.form', ['rubric' => new Rubric, 'academicYears' => AcademicYear::latest('starts_on')->get()]);
+        return view('teacher.rubrics.form', ['rubric' => new Rubric, 'academicYears' => app(ProgramContextService::class)->academicYears(request()->user())]);
     }
 
     public function store(RubricRequest $request, RubricService $service): RedirectResponse
@@ -53,7 +52,7 @@ class RubricController extends Controller
         $this->authorize('update', $rubric);
         $rubric->load('criteria.levels');
 
-        return view('teacher.rubrics.form', ['rubric' => $rubric, 'academicYears' => AcademicYear::latest('starts_on')->get()]);
+        return view('teacher.rubrics.form', ['rubric' => $rubric, 'academicYears' => app(ProgramContextService::class)->academicYears(request()->user())]);
     }
 
     public function update(RubricRequest $request, Rubric $rubric, RubricService $service): RedirectResponse

@@ -25,7 +25,7 @@ class TeacherActivityLogController extends Controller
         $filters = $this->validatedFilters($request);
         $query = $this->filteredQuery($filters, $request);
 
-        return view('staff.activity-logs.index', ['logs' => $query->paginate(12)->withQueryString(), 'academicYears' => AcademicYear::query()->latest('starts_on')->get(), 'teachers' => User::query()->whereHas('roles', fn ($q) => $q->whereIn('slug', [RoleSlug::Teacher->value, RoleSlug::Coach->value]))->orderBy('name')->get(['id', 'name']), 'filters' => $filters]);
+        return view('staff.activity-logs.index', ['logs' => $query->paginate(12)->withQueryString(), 'academicYears' => app(ProgramContextService::class)->academicYears($request->user()), 'teachers' => User::query()->whereHas('roles', fn ($q) => $q->whereIn('slug', [RoleSlug::Teacher->value, RoleSlug::Coach->value]))->orderBy('name')->get(['id', 'name']), 'filters' => $filters]);
     }
 
     public function printIndex(Request $request): View
@@ -48,7 +48,7 @@ class TeacherActivityLogController extends Controller
     {
         $this->authorize('create', TeacherActivityLog::class);
 
-        return view('staff.activity-logs.form', ['log' => new TeacherActivityLog, 'academicYears' => AcademicYear::query()->latest('starts_on')->get()]);
+        return view('staff.activity-logs.form', ['log' => new TeacherActivityLog, 'academicYears' => app(ProgramContextService::class)->academicYears(request()->user())]);
     }
 
     public function store(TeacherActivityLogRequest $request, TeacherActivityLogService $service): RedirectResponse
@@ -70,7 +70,7 @@ class TeacherActivityLogController extends Controller
     {
         $this->authorize('update', $teacherActivityLog);
 
-        return view('staff.activity-logs.form', ['log' => $teacherActivityLog, 'academicYears' => AcademicYear::query()->latest('starts_on')->get()]);
+        return view('staff.activity-logs.form', ['log' => $teacherActivityLog, 'academicYears' => app(ProgramContextService::class)->academicYears(request()->user())]);
     }
 
     public function update(TeacherActivityLogRequest $request, TeacherActivityLog $teacherActivityLog, TeacherActivityLogService $service): RedirectResponse

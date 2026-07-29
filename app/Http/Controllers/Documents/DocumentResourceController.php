@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Documents;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Documents\DocumentIndexRequest;
 use App\Http\Requests\Documents\DocumentResourceRequest;
-use App\Models\AcademicYear;
 use App\Models\DocumentResource;
 use App\Services\DocumentAccessService;
 use App\Services\DocumentResourceService;
@@ -29,7 +28,7 @@ class DocumentResourceController extends Controller
 
         return view('documents.index', [
             'resources' => $resources,
-            'academicYears' => AcademicYear::query()->orderByDesc('starts_on')->get(['id', 'name']),
+            'academicYears' => app(ProgramContextService::class)->academicYears($request->user(), ['id', 'name']),
             'filters' => $filters,
         ]);
     }
@@ -125,6 +124,6 @@ class DocumentResourceController extends Controller
     /** @return array<string, mixed> */
     private function formData(): array
     {
-        return ['academicYears' => AcademicYear::query()->orderByDesc('starts_on')->get(['id', 'name'])];
+        return ['academicYears' => app(ProgramContextService::class)->academicYears(request()->user(), ['id', 'name'])];
     }
 }

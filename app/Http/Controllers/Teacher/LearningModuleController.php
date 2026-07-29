@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teacher\LearningModuleRequest;
-use App\Models\AcademicYear;
 use App\Models\LearningModule;
 use App\Services\ProgramContextService;
 use Illuminate\Http\RedirectResponse;
@@ -21,6 +20,7 @@ class LearningModuleController extends Controller
         $academicYearId = $request->integer('academic_year_id');
         $programContext = app(ProgramContextService::class);
         $activeBatchId = $programContext->activeBatchId($request->user());
+        $academicYears = $programContext->academicYears($request->user(), ['id', 'name']);
 
         return view('teacher.learning.index', [
             'modules' => LearningModule::query()
@@ -31,7 +31,7 @@ class LearningModuleController extends Controller
                 ->orderBy('sort_order')
                 ->paginate(15)
                 ->withQueryString(),
-            'academicYears' => AcademicYear::query()->orderByDesc('starts_on')->get(['id', 'name']),
+            'academicYears' => $academicYears,
             'selectedAcademicYear' => $academicYearId,
             'activeBatch' => $programContext->activeBatch($request->user()),
         ]);
@@ -115,7 +115,7 @@ class LearningModuleController extends Controller
     private function formData(): array
     {
         return [
-            'academicYears' => AcademicYear::query()->orderByDesc('starts_on')->get(['id', 'name']),
+            'academicYears' => app(ProgramContextService::class)->academicYears(request()->user(), ['id', 'name']),
         ];
     }
 }

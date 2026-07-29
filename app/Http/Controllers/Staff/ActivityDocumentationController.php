@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\ActivityDocumentationRequest;
-use App\Models\AcademicYear;
 use App\Models\ActivityDocumentation;
 use App\Services\ActivityDocumentationService;
 use App\Services\ProgramContextService;
@@ -30,14 +29,14 @@ class ActivityDocumentationController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return view('staff.activity-documentations.index', ['docs' => $docs, 'filters' => $filters, 'academicYears' => AcademicYear::query()->latest('starts_on')->get()]);
+        return view('staff.activity-documentations.index', ['docs' => $docs, 'filters' => $filters, 'academicYears' => app(ProgramContextService::class)->academicYears($request->user())]);
     }
 
     public function create(): View
     {
         $this->authorize('create', ActivityDocumentation::class);
 
-        return view('staff.activity-documentations.form', ['documentation' => new ActivityDocumentation, 'academicYears' => AcademicYear::query()->latest('starts_on')->get()]);
+        return view('staff.activity-documentations.form', ['documentation' => new ActivityDocumentation, 'academicYears' => app(ProgramContextService::class)->academicYears(request()->user())]);
     }
 
     public function store(ActivityDocumentationRequest $request, ActivityDocumentationService $service): RedirectResponse
@@ -59,7 +58,7 @@ class ActivityDocumentationController extends Controller
     {
         $this->authorize('update', $activityDocumentation);
 
-        return view('staff.activity-documentations.form', ['documentation' => $activityDocumentation, 'academicYears' => AcademicYear::query()->latest('starts_on')->get()]);
+        return view('staff.activity-documentations.form', ['documentation' => $activityDocumentation, 'academicYears' => app(ProgramContextService::class)->academicYears(request()->user())]);
     }
 
     public function update(ActivityDocumentationRequest $request, ActivityDocumentation $activityDocumentation, ActivityDocumentationService $service): RedirectResponse

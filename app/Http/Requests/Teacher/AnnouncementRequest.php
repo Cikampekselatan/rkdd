@@ -23,7 +23,7 @@ class AnnouncementRequest extends FormRequest
 
     public function rules(): array
     {
-        return ['title' => ['required', 'string', 'max:255'], 'body' => ['required', 'string', 'max:30000'], 'audience' => ['required', Rule::enum(AnnouncementAudience::class)], 'priority' => ['required', Rule::enum(AnnouncementPriority::class)], 'academic_year_id' => ['nullable', 'exists:academic_years,id'], 'class_id' => ['nullable', 'required_if:audience,class', 'exists:classes,id'], 'learning_session_id' => ['nullable', 'required_if:audience,session', 'exists:learning_sessions,id'], 'published_at' => ['nullable', 'date'], 'expires_at' => ['nullable', 'date', 'after:published_at'], 'is_pinned' => ['nullable', 'boolean'], 'action' => ['required', Rule::in(['draft', 'publish'])]];
+        return ['title' => ['required', 'string', 'max:255'], 'body' => ['required', 'string', 'max:30000'], 'audience' => ['required', Rule::enum(AnnouncementAudience::class)], 'priority' => ['required', Rule::enum(AnnouncementPriority::class)], 'academic_year_id' => ['nullable', Rule::in(app(ProgramContextService::class)->academicYears($this->user(), ['id'])->pluck('id')->all())], 'class_id' => ['nullable', 'required_if:audience,class', 'exists:classes,id'], 'learning_session_id' => ['nullable', 'required_if:audience,session', 'exists:learning_sessions,id'], 'published_at' => ['nullable', 'date'], 'expires_at' => ['nullable', 'date', 'after:published_at'], 'is_pinned' => ['nullable', 'boolean'], 'action' => ['required', Rule::in(['draft', 'publish'])]];
     }
 
     public function after(): array

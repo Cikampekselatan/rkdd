@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\RoleSlug;
+use App\Models\AcademicYear;
 use App\Models\ClassStudent;
 use App\Models\ProgramBatch;
 use App\Models\User;
@@ -83,6 +84,28 @@ class ProgramContextService
     public function activeBatchId(User $user): ?int
     {
         return $this->activeBatch($user)?->id;
+    }
+
+    /**
+     * @return Collection<int, AcademicYear>
+     */
+    public function academicYears(User $user, array $columns = ['id', 'name', 'starts_on', 'is_active']): Collection
+    {
+        $activeBatch = $this->activeBatch($user);
+
+        return AcademicYear::query()
+            ->when($activeBatch, function ($query, ProgramBatch $batch): void {
+                $query->where(function ($query) use ($batch): void {
+                    $query->where('name', $batch->period_label)
+                        ->orWhereHas('classes', fn ($classes) => $classes->where('program_batch_id', $batch->id))
+                        ->orWhereHas('registrationCodes', fn ($codes) => $codes->where('program_batch_id', $batch->id))
+                        ->orWhereHas('learningModules', fn ($modules) => $modules->where('program_batch_id', $batch->id))
+                        ->orWhereHas('learningSessions', fn ($sessions) => $sessions->where('program_batch_id', $batch->id));
+                });
+            })
+            ->orderByDesc('is_active')
+            ->orderByDesc('starts_on')
+            ->get($columns);
     }
 
     public function studentActiveMembership(User $user): ?ClassStudent

@@ -7,7 +7,6 @@ use App\Enums\AssignmentType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teacher\AssignmentRequest;
 use App\Http\Requests\Teacher\RequestSubmissionRevisionRequest;
-use App\Models\AcademicYear;
 use App\Models\Assignment;
 use App\Models\LearningSession;
 use App\Models\Rubric;
@@ -118,9 +117,10 @@ class AssignmentController extends Controller
 
     private function formData(): array
     {
-        $activeBatchId = app(ProgramContextService::class)->activeBatchId(request()->user());
+        $programContext = app(ProgramContextService::class);
+        $activeBatchId = $programContext->activeBatchId(request()->user());
 
-        return ['academicYears' => AcademicYear::latest('starts_on')->get(), 'classes' => SchoolClass::with('academicYear:id,name')->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->orderBy('name')->get(), 'learningSessions' => LearningSession::with('academicYear:id,name')->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->orderBy('academic_year_id')->orderBy('session_number')->get(), 'types' => AssignmentType::cases(), 'questionTypes' => AssignmentQuestionType::cases(), 'rubrics' => Rubric::where('is_active', true)->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->withSum('criteria', 'weight')->orderBy('name')->get()];
+        return ['academicYears' => $programContext->academicYears(request()->user()), 'classes' => SchoolClass::with('academicYear:id,name')->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->orderBy('name')->get(), 'learningSessions' => LearningSession::with('academicYear:id,name')->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->orderBy('academic_year_id')->orderBy('session_number')->get(), 'types' => AssignmentType::cases(), 'questionTypes' => AssignmentQuestionType::cases(), 'rubrics' => Rubric::where('is_active', true)->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->withSum('criteria', 'weight')->orderBy('name')->get()];
     }
 
     private function syncQuestions(Assignment $assignment, array $questions): void

@@ -210,6 +210,85 @@ class Phase17LeadershipDashboardTest extends TestCase
             ->assertDontSee('Content Core');
     }
 
+    public function test_assigned_coach_learning_module_form_only_accepts_active_program_year(): void
+    {
+        $institution = Institution::query()->create([
+            'name' => 'SMP IT Mentari Ilmu Jatisari',
+            'slug' => 'smp-it-mentari-ilmu-jatisari-module',
+            'type' => 'sekolah',
+            'is_active' => true,
+        ]);
+        $skuad = Program::query()->create([
+            'name' => 'SKUAD',
+            'slug' => 'skuad-module',
+            'type' => 'ekstrakurikuler',
+            'primary_color' => '#0f766e',
+            'secondary_color' => '#0f172a',
+            'accent_color' => '#f59e0b',
+            'is_active' => true,
+        ]);
+        $contentCore = Program::query()->create([
+            'name' => 'Content Core',
+            'slug' => 'content-core-module',
+            'type' => 'ekstrakurikuler',
+            'primary_color' => '#7c3aed',
+            'secondary_color' => '#111827',
+            'accent_color' => '#f97316',
+            'is_active' => true,
+        ]);
+        $skuadBatch = ProgramBatch::query()->create([
+            'program_id' => $skuad->id,
+            'institution_id' => $institution->id,
+            'name' => 'SKUAD SMP IT Mentari Ilmu Jatisari 2026/2027',
+            'slug' => 'skuad-module-2026-2027',
+            'period_label' => 'SKUAD 2026/2027',
+            'audience_type' => 'school',
+            'participant_label' => 'Siswa',
+            'is_active' => true,
+        ]);
+        $contentBatch = ProgramBatch::query()->create([
+            'program_id' => $contentCore->id,
+            'institution_id' => $institution->id,
+            'name' => 'Content Core 2026/2027',
+            'slug' => 'content-core-module-2026-2027',
+            'period_label' => 'Content Core',
+            'audience_type' => 'school',
+            'participant_label' => 'Siswa',
+            'is_active' => true,
+        ]);
+        $skuadYear = AcademicYear::factory()->active()->create(['name' => 'SKUAD 2026/2027']);
+        $contentYear = AcademicYear::factory()->active()->create(['name' => 'Content Core']);
+        SchoolClass::factory()->create([
+            'academic_year_id' => $skuadYear->id,
+            'program_batch_id' => $skuadBatch->id,
+            'name' => 'Kelompok SKUAD Modul',
+        ]);
+        SchoolClass::factory()->create([
+            'academic_year_id' => $contentYear->id,
+            'program_batch_id' => $contentBatch->id,
+            'name' => 'Kelompok Content Core Modul',
+        ]);
+        $coach = User::factory()->withRole(RoleSlug::Coach)->create(['name' => 'Andi Apriandi ST.']);
+        $coach->assignedProgramBatches()->attach($skuadBatch, ['assigned_by' => $coach->id]);
+
+        $this->actingAs($coach)
+            ->get(route('teacher.learning.modules.create'))
+            ->assertOk()
+            ->assertSee('SKUAD 2026/2027')
+            ->assertDontSee('Content Core');
+
+        $this->actingAs($coach)
+            ->post(route('teacher.learning.modules.store'), [
+                'academic_year_id' => $contentYear->id,
+                'module_number' => 1,
+                'sort_order' => 1,
+                'title' => 'Modul Salah Program',
+                'description' => 'Tidak boleh masuk ke program aktif SKUAD.',
+                'is_active' => '1',
+            ])
+            ->assertSessionHasErrors('academic_year_id');
+    }
+
     private function dashboardContext(): array
     {
         $year = AcademicYear::factory()->create(['is_active' => true, 'name' => '2029/2030']);

@@ -164,7 +164,7 @@ class MonthlyStudentAssessmentController extends Controller
 
     private function form(MonthlyStudentAssessment $assessment, Request $request): View
     {
-        $academicYears = AcademicYear::query()->orderByDesc('is_active')->orderByDesc('starts_on')->get(['id', 'name', 'starts_on', 'is_active']);
+        $academicYears = app(ProgramContextService::class)->academicYears($request->user(), ['id', 'name', 'starts_on', 'is_active']);
         $academicYearId = (int) old('academic_year_id', $assessment->academic_year_id ?: ($request->integer('academic_year_id') ?: $academicYears->first()?->id));
         $activeBatchId = app(ProgramContextService::class)->activeBatchId($request->user());
         $classes = SchoolClass::query()->where('academic_year_id', $academicYearId)->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->where('is_active', true)->orderBy('grade_level')->orderBy('name')->get(['id', 'name', 'program_batch_id']);
@@ -218,8 +218,9 @@ class MonthlyStudentAssessmentController extends Controller
             'class_id' => ['nullable', 'integer', 'exists:classes,id'],
             'semester' => ['nullable', 'integer', 'in:1,2'],
         ]);
-        $academicYears = AcademicYear::query()->orderByDesc('is_active')->orderByDesc('starts_on')->get(['id', 'name', 'starts_on', 'is_active']);
-        $activeBatchId = app(ProgramContextService::class)->activeBatchId($request->user());
+        $programContext = app(ProgramContextService::class);
+        $academicYears = $programContext->academicYears($request->user(), ['id', 'name', 'starts_on', 'is_active']);
+        $activeBatchId = $programContext->activeBatchId($request->user());
         $academicYear = isset($filters['academic_year_id'])
             ? $academicYears->firstWhere('id', (int) $filters['academic_year_id'])
             : $academicYears->first();

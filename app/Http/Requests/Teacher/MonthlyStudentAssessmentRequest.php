@@ -25,7 +25,7 @@ class MonthlyStudentAssessmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'academic_year_id' => ['required', 'integer', 'exists:academic_years,id'],
+            'academic_year_id' => ['required', 'integer', Rule::in(app(ProgramContextService::class)->academicYears($this->user(), ['id'])->pluck('id')->all())],
             'class_id' => ['required', 'integer', 'exists:classes,id'],
             'user_id' => ['required', 'integer', 'exists:users,id'],
             'semester' => ['required', Rule::in([1, 2])],

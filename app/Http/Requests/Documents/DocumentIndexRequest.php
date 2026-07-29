@@ -5,6 +5,7 @@ namespace App\Http\Requests\Documents;
 use App\Enums\DocumentAudience;
 use App\Enums\DocumentCategory;
 use App\Models\DocumentResource;
+use App\Services\ProgramContextService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,7 +22,7 @@ class DocumentIndexRequest extends FormRequest
             'q' => ['nullable', 'string', 'max:100'],
             'category' => ['nullable', Rule::enum(DocumentCategory::class)],
             'audience' => ['nullable', Rule::enum(DocumentAudience::class)],
-            'academic_year_id' => ['nullable', 'exists:academic_years,id'],
+            'academic_year_id' => ['nullable', Rule::in(app(ProgramContextService::class)->academicYears($this->user(), ['id'])->pluck('id')->all())],
             'semester' => ['nullable', Rule::in([1, 2])],
             'status' => ['nullable', Rule::in(['draft', 'published', 'archived'])],
             'pinned' => ['nullable', 'boolean'],

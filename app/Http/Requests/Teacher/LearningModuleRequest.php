@@ -24,7 +24,7 @@ class LearningModuleRequest extends FormRequest
         $activeBatchId = app(ProgramContextService::class)->activeBatchId($this->user());
 
         return [
-            'academic_year_id' => ['required', 'exists:academic_years,id'],
+            'academic_year_id' => ['required', Rule::in(app(ProgramContextService::class)->academicYears($this->user(), ['id'])->pluck('id')->all())],
             'module_number' => [
                 'required', 'integer', 'min:1', 'max:15',
                 Rule::unique('learning_modules')

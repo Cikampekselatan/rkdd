@@ -26,7 +26,7 @@ class ImportantNoteController extends Controller
         $filters = $this->validatedFilters($request);
         $notes = $this->filteredQuery($filters, $request)->paginate(12)->withQueryString();
 
-        return view('staff.important-notes.index', ['notes' => $notes, 'filters' => $filters, 'academicYears' => AcademicYear::query()->latest('starts_on')->get(), 'priorities' => ImportantNotePriority::cases(), 'statuses' => ImportantNoteStatus::cases()]);
+        return view('staff.important-notes.index', ['notes' => $notes, 'filters' => $filters, 'academicYears' => app(ProgramContextService::class)->academicYears($request->user()), 'priorities' => ImportantNotePriority::cases(), 'statuses' => ImportantNoteStatus::cases()]);
     }
 
     public function printIndex(Request $request): View
@@ -108,7 +108,7 @@ class ImportantNoteController extends Controller
 
     private function formData(ImportantNote $note): array
     {
-        return ['note' => $note, 'academicYears' => AcademicYear::query()->latest('starts_on')->get(), 'priorities' => ImportantNotePriority::cases(), 'statuses' => array_filter(ImportantNoteStatus::cases(), fn ($status) => $status !== ImportantNoteStatus::Verified)];
+        return ['note' => $note, 'academicYears' => app(ProgramContextService::class)->academicYears(request()->user()), 'priorities' => ImportantNotePriority::cases(), 'statuses' => array_filter(ImportantNoteStatus::cases(), fn ($status) => $status !== ImportantNoteStatus::Verified)];
     }
 
     private function validatedFilters(Request $request): array

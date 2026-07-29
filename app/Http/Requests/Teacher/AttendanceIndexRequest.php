@@ -4,7 +4,9 @@ namespace App\Http\Requests\Teacher;
 
 use App\Models\AttendanceSession;
 use App\Models\SchoolClass;
+use App\Services\ProgramContextService;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class AttendanceIndexRequest extends FormRequest
@@ -17,7 +19,7 @@ class AttendanceIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'academic_year_id' => ['nullable', 'integer', 'exists:academic_years,id'],
+            'academic_year_id' => ['nullable', 'integer', Rule::in(app(ProgramContextService::class)->academicYears($this->user(), ['id'])->pluck('id')->all())],
             'class_id' => ['nullable', 'integer', 'exists:classes,id'],
         ];
     }

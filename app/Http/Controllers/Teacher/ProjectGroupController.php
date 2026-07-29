@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Teacher;
 use App\Enums\RoleSlug;
 use App\Enums\StudentMembershipStatus;
 use App\Http\Controllers\Controller;
-use App\Models\AcademicYear;
 use App\Models\ClassStudent;
 use App\Models\GroupProject;
 use App\Models\GroupProjectAssessment;
@@ -188,7 +187,13 @@ class ProjectGroupController extends Controller
             'member_ids.*' => ['integer', 'distinct', 'exists:users,id'],
         ]);
         $class = SchoolClass::query()->find($data['class_id']);
-        $activeBatchId = app(ProgramContextService::class)->activeBatchId($request->user());
+        $programContext = app(ProgramContextService::class);
+        $activeBatchId = $programContext->activeBatchId($request->user());
+        $allowedYearIds = $programContext->academicYears($request->user(), ['id'])->pluck('id');
+
+        if (! $allowedYearIds->contains((int) $data['academic_year_id'])) {
+            throw ValidationException::withMessages(['academic_year_id' => 'Tahun ajaran harus berasal dari program aktif.']);
+        }
 
         if ($class && $class->academic_year_id !== (int) $data['academic_year_id']) {
             throw ValidationException::withMessages(['class_id' => 'Kelompok harus berasal dari tahun ajaran yang dipilih.']);
@@ -227,10 +232,11 @@ class ProjectGroupController extends Controller
 
     private function formData(): array
     {
-        $activeBatchId = app(ProgramContextService::class)->activeBatchId(request()->user());
+        $programContext = app(ProgramContextService::class);
+        $activeBatchId = $programContext->activeBatchId(request()->user());
 
         return [
-            'academicYears' => AcademicYear::latest('starts_on')->get(),
+            'academicYears' => $programContext->academicYears(request()->user()),
             'classes' => SchoolClass::with('academicYear:id,name')->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->orderBy('name')->get(),
             'students' => User::query()
                 ->whereHas('roles', fn ($query) => $query->where('slug', RoleSlug::Student->value))

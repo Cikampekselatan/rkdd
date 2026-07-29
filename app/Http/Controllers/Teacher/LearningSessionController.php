@@ -6,7 +6,6 @@ use App\Actions\Learning\PublishLearningSession;
 use App\Enums\LearningSessionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teacher\LearningSessionRequest;
-use App\Models\AcademicYear;
 use App\Models\LearningMaterial;
 use App\Models\LearningModule;
 use App\Models\LearningSession;
@@ -128,10 +127,11 @@ class LearningSessionController extends Controller
     /** @return array<string, mixed> */
     private function formData(): array
     {
-        $activeBatchId = app(ProgramContextService::class)->activeBatchId(request()->user());
+        $programContext = app(ProgramContextService::class);
+        $activeBatchId = $programContext->activeBatchId(request()->user());
 
         return [
-            'academicYears' => AcademicYear::query()->orderByDesc('starts_on')->get(['id', 'name']),
+            'academicYears' => $programContext->academicYears(request()->user(), ['id', 'name']),
             'modules' => LearningModule::query()->with('academicYear:id,name')->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->orderBy('academic_year_id')->orderBy('module_number')->get(),
         ];
     }

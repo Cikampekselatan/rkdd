@@ -38,7 +38,7 @@ class LearningSessionRequest extends FormRequest
         }
 
         return [
-            'academic_year_id' => ['required', 'exists:academic_years,id'],
+            'academic_year_id' => ['required', Rule::in(app(ProgramContextService::class)->academicYears($this->user(), ['id'])->pluck('id')->all())],
             'learning_module_id' => ['required', 'exists:learning_modules,id'],
             'session_number' => [
                 'required', 'integer', 'min:1', 'max:255',

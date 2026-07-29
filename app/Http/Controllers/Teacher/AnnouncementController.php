@@ -6,7 +6,6 @@ use App\Enums\AnnouncementAudience;
 use App\Enums\AnnouncementPriority;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teacher\AnnouncementRequest;
-use App\Models\AcademicYear;
 use App\Models\Announcement;
 use App\Models\LearningSession;
 use App\Models\SchoolClass;
@@ -55,12 +54,13 @@ class AnnouncementController extends Controller
 
     private function formData(): array
     {
-        $activeBatchId = app(ProgramContextService::class)->activeBatchId(request()->user());
+        $programContext = app(ProgramContextService::class);
+        $activeBatchId = $programContext->activeBatchId(request()->user());
 
         return [
             'audiences' => AnnouncementAudience::cases(),
             'priorities' => AnnouncementPriority::cases(),
-            'years' => AcademicYear::latest('starts_on')->get(),
+            'years' => $programContext->academicYears(request()->user()),
             'classes' => SchoolClass::where('is_active', true)->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->orderBy('name')->get(),
             'sessions' => LearningSession::when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->orderBy('session_number')->get(),
         ];
