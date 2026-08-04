@@ -205,6 +205,35 @@ class GoogleOAuthTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_google_onboarding_user_is_redirected_from_student_routes_to_registration_code(): void
+    {
+        $onboardingUser = User::factory()->create([
+            'status' => UserStatus::Onboarding,
+            'password' => null,
+        ]);
+
+        $this->actingAs($onboardingUser)
+            ->get(route('student.dashboard'))
+            ->assertRedirect(route('onboarding.registration-code.show'));
+    }
+
+    public function test_google_onboarding_user_with_validated_code_is_redirected_to_continue_onboarding(): void
+    {
+        $onboardingUser = User::factory()->create([
+            'status' => UserStatus::Onboarding,
+            'password' => null,
+        ]);
+
+        $this->actingAs($onboardingUser)
+            ->withSession(['onboarding.registration_code' => [
+                'user_id' => $onboardingUser->id,
+                'registration_code_id' => 123,
+                'validated_at' => now()->toIso8601String(),
+            ]])
+            ->get(route('student.dashboard'))
+            ->assertRedirect(route('onboarding.registration-code.accepted'));
+    }
+
     /**
      * @param  array<string, mixed>  $attributes
      */
