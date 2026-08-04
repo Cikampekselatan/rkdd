@@ -22,7 +22,7 @@
         <label class="form-label" for="password">Kata sandi {{ $editing ? 'baru (opsional)' : '' }}</label>
         <div class="input-group">
             <input class="form-control @error('password') is-invalid @enderror" id="password" name="password" type="password" autocomplete="new-password" {{ $editing ? '' : 'required' }}>
-            <button class="btn btn-outline-secondary" type="button" data-password-toggle="password" aria-label="Lihat kata sandi">
+            <button class="btn btn-outline-secondary" type="button" data-password-toggle="password" aria-label="Lihat kata sandi" aria-pressed="false" title="Lihat kata sandi">
                 <i class="bi bi-eye" aria-hidden="true"></i>
             </button>
         </div>
@@ -34,7 +34,7 @@
         <label class="form-label" for="password_confirmation">Konfirmasi kata sandi</label>
         <div class="input-group">
             <input class="form-control" id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" {{ $editing ? '' : 'required' }}>
-            <button class="btn btn-outline-secondary" type="button" data-password-toggle="password_confirmation" aria-label="Lihat konfirmasi kata sandi">
+            <button class="btn btn-outline-secondary" type="button" data-password-toggle="password_confirmation" aria-label="Lihat konfirmasi kata sandi" aria-pressed="false" title="Lihat konfirmasi kata sandi">
                 <i class="bi bi-eye" aria-hidden="true"></i>
             </button>
         </div>

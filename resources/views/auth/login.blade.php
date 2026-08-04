@@ -85,6 +85,9 @@
                                 autocomplete="current-password"
                                 required
                             >
+                            <button class="btn btn-outline-secondary" type="button" data-password-toggle="password" aria-label="Lihat kata sandi" aria-pressed="false">
+                                <i class="bi bi-eye" aria-hidden="true"></i>
+                            </button>
                         </div>
                         @error('password')
                             <div class="invalid-feedback d-block">{{ $message }}</div>

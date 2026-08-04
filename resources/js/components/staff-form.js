@@ -1,6 +1,7 @@
 document.querySelectorAll('[data-password-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
         const input = document.getElementById(button.dataset.passwordToggle);
+        const icon = button.querySelector('i');
 
         if (!input) {
             return;
@@ -8,7 +9,10 @@ document.querySelectorAll('[data-password-toggle]').forEach((button) => {
 
         const isHidden = input.type === 'password';
         input.type = isHidden ? 'text' : 'password';
-        button.innerHTML = `<i class="bi ${isHidden ? 'bi-eye-slash' : 'bi-eye'}" aria-hidden="true"></i>`;
+        icon?.classList.toggle('bi-eye', !isHidden);
+        icon?.classList.toggle('bi-eye-slash', isHidden);
         button.setAttribute('aria-label', isHidden ? 'Sembunyikan kata sandi' : 'Lihat kata sandi');
+        button.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+        button.setAttribute('title', isHidden ? 'Sembunyikan kata sandi' : 'Lihat kata sandi');
     });
 });

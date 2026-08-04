@@ -19,6 +19,8 @@ class AuthenticationTest extends TestCase
             ->assertSee('Akses akun')
             ->assertSee('Masuk / daftar siswa dengan Google')
             ->assertSee('Siswa tidak memakai password lokal')
+            ->assertSee('data-password-toggle="password"', false)
+            ->assertSee('bi-eye', false)
             ->assertDontSee('Daftar akun');
     }
 
