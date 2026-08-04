@@ -57,8 +57,8 @@ class LearningSessionRequest extends FormRequest
             ],
             'title' => ['required', 'string', 'max:255'],
             'duration_minutes' => ['required', 'integer', 'min:30', 'max:240'],
-            'objectives' => ['required', 'array', 'min:1', 'max:10'],
-            'objectives.*' => ['required', 'string', 'max:500'],
+            'objectives' => ['required', 'array', 'min:1', 'max:15'],
+            'objectives.*' => ['required', 'string', 'max:3000'],
             'introduction' => ['nullable', 'string', 'max:20000'],
             'summary' => ['nullable', 'string', 'max:20000'],
             'practice_instructions' => ['nullable', 'string', 'max:20000'],
@@ -95,6 +95,15 @@ class LearningSessionRequest extends FormRequest
     {
         return [
             'learning_module_id.exists' => 'Modul harus berasal dari tahun ajaran dan program aktif yang dipilih.',
+            'objectives.required' => 'Tujuan pembelajaran wajib diisi.',
+            'objectives.min' => 'Tujuan pembelajaran wajib diisi minimal satu baris.',
+            'objectives.max' => 'Tujuan pembelajaran maksimal berisi :max poin.',
+            'objectives.*.required' => 'Setiap tujuan pembelajaran wajib diisi.',
+            'objectives.*.max' => 'Setiap tujuan pembelajaran maksimal :max karakter. Pisahkan menjadi beberapa baris bila terlalu panjang.',
+            'introduction.max' => 'Pengantar dan teori maksimal :max karakter.',
+            'summary.max' => 'Rangkuman maksimal :max karakter.',
+            'practice_instructions.max' => 'Latihan maksimal :max karakter.',
+            'reflection_prompt.max' => 'Pertanyaan refleksi maksimal :max karakter.',
         ];
     }
 
@@ -107,6 +116,10 @@ class LearningSessionRequest extends FormRequest
             'duration_minutes' => 'durasi',
             'objectives' => 'tujuan pembelajaran',
             'objectives.*' => 'tujuan pembelajaran',
+            'introduction' => 'pengantar dan teori',
+            'summary' => 'rangkuman',
+            'practice_instructions' => 'latihan',
+            'reflection_prompt' => 'pertanyaan refleksi',
             'scheduled_at' => 'jadwal publikasi',
         ];
     }
