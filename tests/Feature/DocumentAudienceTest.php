@@ -19,6 +19,31 @@ class DocumentAudienceTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_document_form_requires_a_sharing_checklist_target(): void
+    {
+        $superAdmin = User::factory()->withRole(RoleSlug::SuperAdmin)->create();
+
+        $this->actingAs($superAdmin)
+            ->get(route('documents.create'))
+            ->assertOk()
+            ->assertSee('Checklist pembagian dokumen')
+            ->assertSee('wajib pilih satu tujuan')
+            ->assertSee('value="'.DocumentAudience::Students->value.'"', false)
+            ->assertSee('value="'.DocumentAudience::AllStaff->value.'"', false);
+
+        $this->actingAs($superAdmin)->post(route('documents.store'), [
+            'title' => 'Panduan tanpa audience',
+            'category' => DocumentCategory::Guide->value,
+            'description' => 'Dokumen harus memiliki tujuan pembagian.',
+            'drive_url' => 'https://drive.google.com/file/d/123456789abcdefghijklmnop/view',
+            'academic_year_id' => '',
+            'semester' => '',
+            'sort_order' => 0,
+            'is_pinned' => 0,
+            'publish_now' => 1,
+        ])->assertSessionHasErrors(['audience']);
+    }
+
     public function test_student_only_sees_published_student_audiences_for_their_year(): void
     {
         $year = AcademicYear::factory()->active()->create();

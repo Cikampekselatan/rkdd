@@ -69,6 +69,22 @@ class DocumentResourceRequest extends FormRequest
         return $this->parsedDriveUrl ?? app(GoogleDriveUrlParser::class)->parse((string) $this->input('drive_url'));
     }
 
+    public function messages(): array
+    {
+        return [
+            'audience.required' => 'Checklist pembagian dokumen wajib dipilih.',
+            'audience.enum' => 'Tujuan pembagian dokumen tidak valid.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'audience' => 'checklist pembagian dokumen',
+            'drive_url' => 'URL Google Drive',
+        ];
+    }
+
     protected function prepareForValidation(): void
     {
         $this->merge([

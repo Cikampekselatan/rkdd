@@ -3,7 +3,25 @@
     <div class="col-lg-4"><label class="form-label" for="category">Kategori</label><select class="form-select @error('category') is-invalid @enderror" id="category" name="category">@foreach(\App\Enums\DocumentCategory::cases() as $category)<option value="{{ $category->value }}" @selected(old('category', $documentResource?->category?->value ?? 'panduan') === $category->value)>{{ $category->label() }}</option>@endforeach</select>@error('category')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
     <div class="col-12"><label class="form-label" for="description">Deskripsi</label><textarea class="form-control" id="description" name="description" rows="3" placeholder="Jelaskan isi dan kegunaan dokumen.">{{ old('description', $documentResource->description ?? '') }}</textarea></div>
     <div class="col-12"><label class="form-label" for="drive_url">URL Google Drive</label><input class="form-control @error('drive_url') is-invalid @enderror" id="drive_url" name="drive_url" type="url" value="{{ old('drive_url', $documentResource->drive_url ?? '') }}" placeholder="https://drive.google.com/file/d/.../view" required>@error('drive_url')<div class="invalid-feedback">{{ $message }}</div>@enderror<div class="form-text">Gunakan URL Google Drive/Docs. Pastikan akses sharing menggunakan Viewer untuk audience yang dipilih.</div></div>
-    <div class="col-md-6"><label class="form-label" for="audience">Audience</label><select class="form-select @error('audience') is-invalid @enderror" id="audience" name="audience">@foreach(\App\Enums\DocumentAudience::cases() as $audience)<option value="{{ $audience->value }}" @selected(old('audience', $documentResource?->audience?->value ?? 'staff_only') === $audience->value)>{{ $audience->label() }} — {{ $audience->description() }}</option>@endforeach</select>@error('audience')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+    <div class="col-12">
+        @php($selectedAudience = old('audience', $documentResource?->audience?->value ?? 'staff_only'))
+        <fieldset class="document-audience-checklist @error('audience') is-invalid @enderror">
+            <legend>Checklist pembagian dokumen <small>wajib pilih satu tujuan</small></legend>
+            <div class="document-audience-options">
+                @foreach(\App\Enums\DocumentAudience::cases() as $audience)
+                    @php($inputId = 'audience_'.$audience->value)
+                    <label class="document-audience-option" for="{{ $inputId }}">
+                        <input class="form-check-input" id="{{ $inputId }}" name="audience" type="radio" value="{{ $audience->value }}" @checked($selectedAudience === $audience->value) required>
+                        <span>
+                            <strong>{{ $audience->label() }}</strong>
+                            <small>{{ $audience->description() }}</small>
+                        </span>
+                    </label>
+                @endforeach
+            </div>
+        </fieldset>
+        @error('audience')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+    </div>
     <div class="col-md-3"><label class="form-label" for="academic_year_id">Tahun ajaran</label><select class="form-select" id="academic_year_id" name="academic_year_id"><option value="">Semua tahun</option>@foreach($academicYears as $year)<option value="{{ $year->id }}" @selected((string) old('academic_year_id', $documentResource->academic_year_id ?? '') === (string) $year->id)>{{ $year->name }}</option>@endforeach</select></div>
     <div class="col-md-3"><label class="form-label" for="semester">Semester</label><select class="form-select" id="semester" name="semester"><option value="">Semua semester</option><option value="1" @selected((string) old('semester', $documentResource->semester ?? '') === '1')>Semester 1</option><option value="2" @selected((string) old('semester', $documentResource->semester ?? '') === '2')>Semester 2</option></select></div>
     <div class="col-md-3"><label class="form-label" for="sort_order">Urutan</label><input class="form-control" id="sort_order" name="sort_order" type="number" min="0" max="9999" value="{{ old('sort_order', $documentResource->sort_order ?? 0) }}"></div>
