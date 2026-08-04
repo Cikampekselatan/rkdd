@@ -21,6 +21,7 @@ class LearningModuleFactory extends Factory
             'title' => $title,
             'slug' => Str::slug($title),
             'description' => fake()->sentence(),
+            'url' => null,
             'sort_order' => $number,
             'is_active' => true,
             'created_by' => null,

@@ -35,8 +35,19 @@ class LearningModuleRequest extends FormRequest
             ],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:3000'],
+            'url' => ['nullable', 'url', 'max:2048'],
             'sort_order' => ['required', 'integer', 'min:0', 'max:999'],
             'is_active' => ['required', 'boolean'],
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'academic_year_id' => 'tahun ajaran',
+            'module_number' => 'nomor modul',
+            'sort_order' => 'urutan',
+            'url' => 'URL modul',
         ];
     }
 

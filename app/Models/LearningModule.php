@@ -21,6 +21,7 @@ class LearningModule extends Model
         'title',
         'slug',
         'description',
+        'url',
         'sort_order',
         'is_active',
         'created_by',

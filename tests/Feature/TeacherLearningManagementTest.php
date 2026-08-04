@@ -6,9 +6,12 @@ use App\Enums\LearningMaterialType;
 use App\Enums\LearningSessionStatus;
 use App\Enums\RoleSlug;
 use App\Models\AcademicYear;
+use App\Models\Institution;
 use App\Models\LearningMaterial;
 use App\Models\LearningModule;
 use App\Models\LearningSession;
+use App\Models\Program;
+use App\Models\ProgramBatch;
 use App\Models\StudentLearningProgress;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,12 +32,14 @@ class TeacherLearningManagementTest extends TestCase
             'module_number' => 1,
             'title' => 'Fondasi Digital',
             'description' => 'Etika dan keamanan digital.',
+            'url' => 'https://drive.google.com/drive/folders/fondasi-digital',
             'sort_order' => 1,
             'is_active' => 1,
         ])->assertRedirect(route('teacher.learning.index'));
 
         $module = LearningModule::query()->firstOrFail();
         $this->assertSame('fondasi-digital-1', $module->slug);
+        $this->assertSame('https://drive.google.com/drive/folders/fondasi-digital', $module->url);
 
         $this->actingAs($teacher)->post(route('teacher.learning.sessions.store'), $this->sessionPayload($academicYear, $module))
             ->assertRedirect();
@@ -82,6 +87,56 @@ class TeacherLearningManagementTest extends TestCase
         $this->assertNotNull($session->published_at);
     }
 
+    public function test_coach_can_create_learning_session_inside_active_program(): void
+    {
+        $coach = User::factory()->withRole(RoleSlug::Coach)->create();
+        $program = Program::query()->create([
+            'name' => 'SKUAD',
+            'slug' => 'skuad-coach-learning',
+            'type' => 'ekskul',
+            'primary_color' => '#0f766e',
+            'secondary_color' => '#0f172a',
+            'accent_color' => '#f59e0b',
+            'is_active' => true,
+        ]);
+        $institution = Institution::query()->create([
+            'name' => 'SMP IT Mentari Ilmu Jatisari',
+            'slug' => 'mentari-ilmu-coach-learning',
+            'type' => 'school',
+            'is_active' => true,
+        ]);
+        $batch = ProgramBatch::query()->create([
+            'program_id' => $program->id,
+            'institution_id' => $institution->id,
+            'name' => 'SKUAD 2026/2027',
+            'slug' => 'skuad-coach-learning-2026',
+            'period_label' => '2026/2027',
+            'audience_type' => 'school',
+            'participant_label' => 'Siswa',
+            'is_active' => true,
+        ]);
+        $coach->assignedProgramBatches()->attach($batch->id);
+        $academicYear = AcademicYear::factory()->active()->create(['name' => '2026/2027']);
+        $module = LearningModule::factory()->create([
+            'academic_year_id' => $academicYear->id,
+            'program_batch_id' => $batch->id,
+            'module_number' => 1,
+        ]);
+
+        $this->withSession(['active_program_batch_id' => $batch->id])
+            ->actingAs($coach)
+            ->post(route('teacher.learning.sessions.store'), $this->sessionPayload($academicYear, $module))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('learning_sessions', [
+            'academic_year_id' => $academicYear->id,
+            'program_batch_id' => $batch->id,
+            'learning_module_id' => $module->id,
+            'session_number' => 1,
+            'title' => 'Orientasi Digital',
+        ]);
+    }
+
     public function test_learning_forms_enforce_year_number_schedule_and_material_rules(): void
     {
         $teacher = User::factory()->withRole(RoleSlug::Teacher)->create();
@@ -101,6 +156,16 @@ class TeacherLearningManagementTest extends TestCase
             'status' => LearningSessionStatus::Scheduled->value,
             'scheduled_at' => now()->subHour()->format('Y-m-d H:i:s'),
         ])->assertSessionHasErrors(['learning_module_id', 'session_number', 'objectives', 'scheduled_at']);
+
+        $this->actingAs($teacher)->post(route('teacher.learning.modules.store'), [
+            'academic_year_id' => $firstYear->id,
+            'module_number' => 2,
+            'title' => 'Modul URL Rusak',
+            'description' => 'URL harus valid.',
+            'url' => 'bukan-url',
+            'sort_order' => 2,
+            'is_active' => 1,
+        ])->assertSessionHasErrors('url');
 
         $session = LearningSession::factory()->create([
             'academic_year_id' => $firstYear->id,

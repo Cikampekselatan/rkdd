@@ -25,6 +25,9 @@ class LearningSessionRequest extends FormRequest
     {
         $session = $this->route('learning_session');
         $activeBatchId = app(ProgramContextService::class)->activeBatchId($this->user());
+        $moduleRule = Rule::exists('learning_modules', 'id')
+            ->where('academic_year_id', $this->input('academic_year_id'))
+            ->whereNull('deleted_at');
         $statuses = [
             LearningSessionStatus::Draft->value,
             LearningSessionStatus::Scheduled->value,
@@ -33,13 +36,17 @@ class LearningSessionRequest extends FormRequest
             LearningSessionStatus::Archived->value,
         ];
 
+        if ($activeBatchId) {
+            $moduleRule->where('program_batch_id', $activeBatchId);
+        }
+
         if ($session?->status === LearningSessionStatus::Published) {
             $statuses[] = LearningSessionStatus::Published->value;
         }
 
         return [
             'academic_year_id' => ['required', Rule::in(app(ProgramContextService::class)->academicYears($this->user(), ['id'])->pluck('id')->all())],
-            'learning_module_id' => ['required', 'exists:learning_modules,id'],
+            'learning_module_id' => ['required', $moduleRule],
             'session_number' => [
                 'required', 'integer', 'min:1', 'max:255',
                 Rule::unique('learning_sessions')
@@ -82,6 +89,26 @@ class LearningSessionRequest extends FormRequest
                 $validator->errors()->add('scheduled_at', 'Jadwal publikasi harus berada di masa mendatang.');
             }
         }];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'learning_module_id.exists' => 'Modul harus berasal dari tahun ajaran dan program aktif yang dipilih.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'academic_year_id' => 'tahun ajaran',
+            'learning_module_id' => 'modul',
+            'session_number' => 'nomor pertemuan',
+            'duration_minutes' => 'durasi',
+            'objectives' => 'tujuan pembelajaran',
+            'objectives.*' => 'tujuan pembelajaran',
+            'scheduled_at' => 'jadwal publikasi',
+        ];
     }
 
     protected function prepareForValidation(): void

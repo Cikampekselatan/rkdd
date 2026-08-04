@@ -40,6 +40,9 @@
                             <p>{{ $module->description ?: 'Belum ada deskripsi modul.' }}</p>
                         </div>
                         <div class="learning-module-actions">
+                            @if ($module->url)
+                                <a class="skuad-icon-button" href="{{ $module->url }}" target="_blank" rel="noopener noreferrer" aria-label="Buka URL modul"><i class="bi bi-box-arrow-up-right"></i></a>
+                            @endif
                             <a class="skuad-icon-button" href="{{ route('teacher.learning.sessions.create', ['module' => $module->id, 'academic_year_id' => $module->academic_year_id]) }}" aria-label="Tambah pertemuan ke modul"><i class="bi bi-plus-lg"></i></a>
                             <a class="skuad-icon-button" href="{{ route('teacher.learning.modules.edit', $module) }}" aria-label="Edit modul"><i class="bi bi-pencil"></i></a>
                             <form method="POST" action="{{ route('teacher.learning.modules.destroy', $module) }}" data-confirm="Arsipkan modul ini?">@csrf @method('DELETE')<button class="skuad-icon-button text-danger" aria-label="Arsipkan modul"><i class="bi bi-archive"></i></button></form>
