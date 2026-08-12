@@ -31,6 +31,17 @@ class GoogleOAuthTest extends TestCase
             ->assertRedirect('https://accounts.google.com/o/oauth2/auth');
     }
 
+    public function test_google_redirect_is_blocked_when_oauth_configuration_is_missing(): void
+    {
+        config()->set('services.google.client_id', null);
+
+        Socialite::shouldReceive('driver')->never();
+
+        $this->get(route('google.redirect'))
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors('google');
+    }
+
     public function test_new_google_user_enters_onboarding_without_student_role_or_stored_token(): void
     {
         $this->mockGoogleCallback([

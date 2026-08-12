@@ -26,25 +26,30 @@ class CheckInAttendance
                 ->where('attendance_session_id', $session->id)
                 ->where('user_id', $student->id)
                 ->lockForUpdate()
-                ->firstOrFail();
+                ->first();
 
-            if ($record->checked_in_at) {
+            if ($record?->checked_in_at) {
                 return $record;
             }
 
-            $oldStatus = $record->status;
-            $oldNotes = $record->notes;
-            $newStatus = $record->status === AttendanceStatus::Absent
+            $oldStatus = $record?->status;
+            $oldNotes = $record?->notes;
+            $newStatus = $record?->status === AttendanceStatus::Absent || ! $record
                 ? AttendanceStatus::Present
                 : $record->status;
 
-            $record->update([
+            $record ??= new AttendanceRecord([
+                'attendance_session_id' => $session->id,
+                'user_id' => $student->id,
+            ]);
+
+            $record->fill([
                 'status' => $newStatus,
                 'recorded_by' => $student->id,
                 'recorded_at' => now(),
                 'checked_in_at' => now(),
                 'check_in_method' => 'qr',
-            ]);
+            ])->save();
 
             $record->logs()->create([
                 'user_id' => $student->id,

@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\RoleSlug;
 use App\Models\AcademicYear;
+use App\Models\Institution;
+use App\Models\Program;
+use App\Models\ProgramBatch;
 use App\Models\RegistrationCode;
 use App\Models\SchoolClass;
 use App\Models\User;
@@ -138,6 +141,88 @@ class RegistrationCodeAdminTest extends TestCase
         ])->assertSessionHasErrors(['name', 'academic_year_id', 'max_uses', 'expires_at']);
 
         $this->assertDatabaseCount('registration_codes', 0);
+    }
+
+    public function test_registration_code_uses_active_program_batch_when_all_classes_are_allowed(): void
+    {
+        $admin = User::factory()->withRole(RoleSlug::SuperAdmin)->create();
+        $institution = Institution::query()->create([
+            'name' => 'SMPN 3 Cikampek',
+            'slug' => 'smpn-3-cikampek',
+            'type' => 'sekolah',
+            'is_active' => true,
+        ]);
+        $skuadProgram = Program::query()->create([
+            'name' => 'SKUAD',
+            'slug' => 'skuad',
+            'type' => 'ekstrakurikuler',
+            'is_active' => true,
+        ]);
+        $journalismProgram = Program::query()->create([
+            'name' => 'Jurnalistik & Media Kreatif',
+            'slug' => 'jurnalistik-media-kreatif',
+            'type' => 'ekstrakurikuler',
+            'is_active' => true,
+        ]);
+        $skuadYear = AcademicYear::factory()->create(['name' => 'SKUAD 2026/2027']);
+        $journalismYear = AcademicYear::factory()->create(['name' => 'Jurnalistik 2026/2027']);
+        $skuadBatch = ProgramBatch::query()->create([
+            'program_id' => $skuadProgram->id,
+            'institution_id' => $institution->id,
+            'name' => 'SKUAD 2026/2027',
+            'slug' => 'skuad-2026-2027-test',
+            'period_label' => 'SKUAD 2026/2027',
+            'audience_type' => 'school',
+            'participant_label' => 'Siswa',
+            'is_active' => true,
+        ]);
+        $journalismBatch = ProgramBatch::query()->create([
+            'program_id' => $journalismProgram->id,
+            'institution_id' => $institution->id,
+            'name' => 'Jurnalistik & Media Kreatif - SMPN 3 Cikampek - 2026/2027',
+            'slug' => 'jurnalistik-media-kreatif-2026-2027-test',
+            'period_label' => 'Jurnalistik 2026/2027',
+            'audience_type' => 'school',
+            'participant_label' => 'Murid Jurnalistik',
+            'is_active' => true,
+        ]);
+        SchoolClass::factory()->create([
+            'academic_year_id' => $skuadYear->id,
+            'program_batch_id' => $skuadBatch->id,
+            'name' => 'SKUAD A',
+        ]);
+        SchoolClass::factory()->create([
+            'academic_year_id' => $journalismYear->id,
+            'program_batch_id' => $journalismBatch->id,
+            'name' => 'Jurnalistik A',
+        ]);
+
+        $this->actingAs($admin)
+            ->withSession(['active_program_batch_id' => $journalismBatch->id])
+            ->get(route('admin.registration-codes.create'))
+            ->assertOk()
+            ->assertSee('Jurnalistik 2026/2027')
+            ->assertSee('Jurnalistik A')
+            ->assertDontSee('SKUAD A');
+
+        $this->actingAs($admin)
+            ->withSession(['active_program_batch_id' => $journalismBatch->id])
+            ->post(route('admin.registration-codes.store'), [
+                'name' => 'Gelombang Jurnalistik',
+                'academic_year_id' => $journalismYear->id,
+                'class_id' => '',
+                'max_uses' => 30,
+                'starts_at' => now()->subHour()->format('Y-m-d H:i:s'),
+                'expires_at' => now()->addWeek()->format('Y-m-d H:i:s'),
+                'is_active' => 1,
+            ])->assertRedirect(route('admin.registration-codes.index'));
+
+        $this->assertDatabaseHas('registration_codes', [
+            'name' => 'Gelombang Jurnalistik',
+            'program_batch_id' => $journalismBatch->id,
+            'academic_year_id' => $journalismYear->id,
+            'class_id' => null,
+        ]);
     }
 
     public function test_teacher_cannot_manage_codes_but_super_admin_can(): void

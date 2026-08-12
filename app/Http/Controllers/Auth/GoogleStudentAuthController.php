@@ -23,6 +23,12 @@ class GoogleStudentAuthController extends Controller
 {
     public function redirect(): SymfonyRedirectResponse
     {
+        if (! $this->hasGoogleConfiguration()) {
+            return redirect()->route('login')->withErrors([
+                'google' => 'Konfigurasi Google OAuth belum lengkap. Mohon hubungi admin untuk mengisi GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, dan GOOGLE_REDIRECT_URI.',
+            ]);
+        }
+
         return Socialite::driver('google')->redirect();
     }
 
@@ -82,5 +88,12 @@ class GoogleStudentAuthController extends Controller
         );
 
         return view('auth.onboarding-pending');
+    }
+
+    private function hasGoogleConfiguration(): bool
+    {
+        return filled(config('services.google.client_id'))
+            && filled(config('services.google.client_secret'))
+            && filled(config('services.google.redirect'));
     }
 }

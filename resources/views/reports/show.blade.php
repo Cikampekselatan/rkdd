@@ -24,7 +24,6 @@
             <div>
                 <label for="program_batch_id">Program</label>
                 <select class="form-select" id="program_batch_id" name="program_batch_id">
-                    <option value="">Semua program</option>
                     @foreach($programBatches as $batch)
                         <option value="{{ $batch->id }}" @selected((int)($filters['program_batch_id'] ?? 0) === $batch->id)>{{ $batch->program?->name }} · {{ $batch->institution?->name }} · {{ $batch->period_label }}</option>
                     @endforeach

@@ -22,24 +22,31 @@ class Phase15MultiProgramReportsTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_super_admin_can_view_all_program_reports_or_filter_one_program(): void
+    public function test_super_admin_reports_default_to_active_program_without_leaking_other_programs(): void
     {
         $superAdmin = User::factory()->withRole(RoleSlug::SuperAdmin)->create();
-        $year = AcademicYear::factory()->active()->create();
-        [$skuadBatch, $skuadClass] = $this->programContext($year, 'SKUAD', 'skuad-report-phase-15');
-        [$creatorBatch, $creatorClass] = $this->programContext($year, 'Konten Kreator', 'creator-report-phase-15');
-        $skuadStudent = $this->student($year, $skuadBatch, $skuadClass, 'Siswa Laporan SKUAD');
-        $creatorStudent = $this->student($year, $creatorBatch, $creatorClass, 'Peserta Laporan Creator');
+        $skuadYear = AcademicYear::factory()->create(['name' => 'SKUAD 2026/2027', 'is_active' => false]);
+        $creatorYear = AcademicYear::factory()->active()->create(['name' => 'Journi3 2026/2027']);
+        [$skuadBatch, $skuadClass] = $this->programContext($skuadYear, 'SKUAD', 'skuad-report-phase-15', 'SKUAD 2026/2027');
+        [$creatorBatch, $creatorClass] = $this->programContext($creatorYear, 'Konten Kreator', 'creator-report-phase-15', 'Journi3 2026/2027');
+        $skuadStudent = $this->student($skuadYear, $skuadBatch, $skuadClass, 'Siswa Laporan SKUAD');
+        $creatorStudent = $this->student($creatorYear, $creatorBatch, $creatorClass, 'Peserta Laporan Creator');
 
-        $this->actingAs($superAdmin)
-            ->get(route('reports.show', ['students', 'year' => $year->id]))
-            ->assertOk()
-            ->assertSee($skuadStudent->name)
+        $response = $this->withSession(['active_program_batch_id' => $creatorBatch->id])
+            ->actingAs($superAdmin)
+            ->get(route('reports.show', ['students']));
+
+        $response->assertOk()
             ->assertSee($creatorStudent->name)
-            ->assertSee('Semua program');
+            ->assertDontSee($skuadStudent->name)
+            ->assertDontSee('Semua program');
+
+        preg_match('/<select class="form-select" id="year" name="year">(.*?)<\/select>/s', $response->getContent(), $yearSelect);
+        $this->assertStringContainsString('Journi3 2026/2027', $yearSelect[1] ?? '');
+        $this->assertStringNotContainsString('SKUAD 2026/2027', $yearSelect[1] ?? '');
 
         $this->actingAs($superAdmin)
-            ->get(route('reports.show', ['students', 'year' => $year->id, 'program_batch_id' => $creatorBatch->id]))
+            ->get(route('reports.show', ['students', 'year' => $creatorYear->id, 'program_batch_id' => $creatorBatch->id]))
             ->assertOk()
             ->assertSee($creatorStudent->name)
             ->assertDontSee($skuadStudent->name);
@@ -124,7 +131,7 @@ class Phase15MultiProgramReportsTest extends TestCase
     /**
      * @return array{ProgramBatch, SchoolClass}
      */
-    private function programContext(AcademicYear $year, string $name, string $slug): array
+    private function programContext(AcademicYear $year, string $name, string $slug, string $periodLabel = '2026'): array
     {
         $program = Program::query()->create([
             'name' => $name,
@@ -144,7 +151,7 @@ class Phase15MultiProgramReportsTest extends TestCase
             'institution_id' => $institution->id,
             'name' => $name.' 2026',
             'slug' => $slug.'-2026',
-            'period_label' => '2026',
+            'period_label' => $periodLabel,
             'audience_type' => 'community',
             'participant_label' => 'Peserta',
             'is_active' => true,

@@ -93,9 +93,17 @@ class ProgramContextService
     {
         $activeBatch = $this->activeBatch($user);
 
-        if ($activeBatch) {
+        return $this->academicYearsForBatch($activeBatch, $columns);
+    }
+
+    /**
+     * @return Collection<int, AcademicYear>
+     */
+    public function academicYearsForBatch(?ProgramBatch $batch, array $columns = ['id', 'name', 'starts_on', 'is_active']): Collection
+    {
+        if ($batch) {
             $matchingPeriod = AcademicYear::query()
-                ->where('name', $activeBatch->period_label)
+                ->where('name', $batch->period_label)
                 ->orderByDesc('is_active')
                 ->orderByDesc('starts_on')
                 ->get($columns);
@@ -106,7 +114,7 @@ class ProgramContextService
         }
 
         return AcademicYear::query()
-            ->when($activeBatch, function ($query, ProgramBatch $batch): void {
+            ->when($batch, function ($query, ProgramBatch $batch): void {
                 $query->where(function ($query) use ($batch): void {
                     $query->where('name', $batch->period_label)
                         ->orWhereHas('classes', fn ($classes) => $classes->where('program_batch_id', $batch->id))

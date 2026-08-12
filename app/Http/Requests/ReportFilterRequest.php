@@ -28,21 +28,40 @@ class ReportFilterRequest extends FormRequest
     public function after(): array
     {
         return [function (Validator $validator): void {
-            $activeBatchId = app(ProgramContextService::class)->activeBatchId($this->user());
+            $programContext = app(ProgramContextService::class);
+            $user = $this->user();
+            $activeBatch = $programContext->activeBatch($user);
+            $activeBatchId = $activeBatch?->id;
+            $availableBatches = $programContext->availableBatches($user);
             $requestedBatchId = $this->filled('program_batch_id') ? $this->integer('program_batch_id') : null;
-            if (! $this->user()?->hasRole(RoleSlug::SuperAdmin) && $requestedBatchId && $activeBatchId && $requestedBatchId !== $activeBatchId) {
+
+            if ($requestedBatchId && ! $availableBatches->contains('id', $requestedBatchId)) {
+                $validator->errors()->add('program_batch_id', 'Program laporan tidak tersedia untuk akun ini.');
+            }
+
+            if (! $user?->hasRole(RoleSlug::SuperAdmin) && $requestedBatchId && $activeBatchId && $requestedBatchId !== $activeBatchId) {
                 $validator->errors()->add('program_batch_id', 'Program laporan harus sesuai dengan program aktif.');
             }
 
-            if ($this->filled('class') && $this->filled('year')) {
+            $selectedBatch = $activeBatch;
+            if ($requestedBatchId && $availableBatches->contains('id', $requestedBatchId)) {
+                $selectedBatch = $availableBatches->firstWhere('id', $requestedBatchId);
+            }
+
+            if ($this->filled('year') && $selectedBatch) {
+                $allowedYearIds = $programContext->academicYearsForBatch($selectedBatch, ['id'])->pluck('id');
+                if (! $allowedYearIds->contains($this->integer('year'))) {
+                    $validator->errors()->add('year', 'Tahun ajaran harus berasal dari program laporan yang dipilih.');
+                }
+            }
+
+            if ($this->filled('class')) {
                 $class = SchoolClass::find($this->integer('class'));
-                if ($class && $class->academic_year_id !== $this->integer('year')) {
+                if ($class && $this->filled('year') && $class->academic_year_id !== $this->integer('year')) {
                     $validator->errors()->add('class', 'Kelas harus berasal dari tahun ajaran yang dipilih.');
                 }
 
-                $programBatchId = $this->user()?->hasRole(RoleSlug::SuperAdmin)
-                    ? $requestedBatchId
-                    : $activeBatchId;
+                $programBatchId = $selectedBatch?->id;
                 if ($class && $programBatchId && $class->program_batch_id && $class->program_batch_id !== $programBatchId) {
                     $validator->errors()->add('class', 'Kelas harus berasal dari program laporan yang dipilih.');
                 }

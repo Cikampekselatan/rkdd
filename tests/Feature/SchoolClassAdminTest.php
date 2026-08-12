@@ -218,6 +218,34 @@ class SchoolClassAdminTest extends TestCase
         );
     }
 
+    public function test_group_form_scopes_academic_years_to_active_program_batch(): void
+    {
+        $superAdmin = User::factory()->withRole(RoleSlug::SuperAdmin)->create();
+        $skuadYear = AcademicYear::factory()->active()->create(['name' => 'SKUAD 2026/2027']);
+        $contentYear = AcademicYear::factory()->create(['name' => 'Content Core']);
+        $journalismYear = AcademicYear::factory()->create(['name' => 'Journi3 2026/2027']);
+        [$skuadBatch, $journalismBatch] = $this->programBatches($skuadYear, 'Jurnalistik & Media Kreatif', 'jurnalistik-media-kreatif', $journalismYear->name);
+
+        SchoolClass::factory()->create([
+            'program_batch_id' => $skuadBatch->id,
+            'academic_year_id' => $contentYear->id,
+            'name' => 'Content Core A',
+        ]);
+
+        $response = $this->actingAs($superAdmin)
+            ->withSession(['active_program_batch_id' => $journalismBatch->id])
+            ->get(route('admin.classes.create'))
+            ->assertOk()
+            ->assertSee('Journi3 2026/2027');
+
+        preg_match('/<select[^>]+id="academic_year_id"[^>]*>(.*?)<\/select>/s', $response->getContent(), $matches);
+
+        $this->assertNotEmpty($matches[1] ?? null);
+        $this->assertStringContainsString('Journi3 2026/2027', $matches[1]);
+        $this->assertStringNotContainsString('SKUAD 2026/2027', $matches[1]);
+        $this->assertStringNotContainsString('Content Core', $matches[1]);
+    }
+
     public function test_unused_class_can_be_archived_and_referenced_classes_are_protected(): void
     {
         $admin = User::factory()->withRole(RoleSlug::Admin)->create();
@@ -259,8 +287,12 @@ class SchoolClassAdminTest extends TestCase
     /**
      * @return array{0: ProgramBatch, 1: ProgramBatch}
      */
-    private function programBatches(AcademicYear $academicYear): array
-    {
+    private function programBatches(
+        AcademicYear $academicYear,
+        string $secondProgramName = 'Content Core',
+        string $secondProgramSlug = 'content-core',
+        ?string $secondPeriodLabel = null,
+    ): array {
         $institution = Institution::query()->create([
             'name' => 'RKDD Cikampek Selatan',
             'slug' => 'rkdd-cikampek-selatan',
@@ -279,8 +311,8 @@ class SchoolClassAdminTest extends TestCase
         ]);
 
         $contentCore = Program::query()->create([
-            'name' => 'Content Core',
-            'slug' => 'content-core',
+            'name' => $secondProgramName,
+            'slug' => $secondProgramSlug,
             'type' => 'pelatihan',
             'primary_color' => '#7c3aed',
             'secondary_color' => '#111827',
@@ -302,9 +334,9 @@ class SchoolClassAdminTest extends TestCase
             ProgramBatch::query()->create([
                 'program_id' => $contentCore->id,
                 'institution_id' => $institution->id,
-                'name' => 'Content Core '.$academicYear->name,
-                'slug' => 'content-core-'.str_replace('/', '', $academicYear->name),
-                'period_label' => $academicYear->name,
+                'name' => $secondProgramName.' '.($secondPeriodLabel ?? $academicYear->name),
+                'slug' => $secondProgramSlug.'-'.str_replace('/', '', $secondPeriodLabel ?? $academicYear->name),
+                'period_label' => $secondPeriodLabel ?? $academicYear->name,
                 'audience_type' => 'village',
                 'participant_label' => 'Peserta',
                 'is_active' => true,

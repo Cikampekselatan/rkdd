@@ -6,7 +6,6 @@ use App\Actions\RegistrationCodes\CreateRegistrationCode;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreRegistrationCodeRequest;
 use App\Http\Requests\Admin\UpdateRegistrationCodeRequest;
-use App\Models\AcademicYear;
 use App\Models\RegistrationCode;
 use App\Models\SchoolClass;
 use App\Services\ProgramContextService;
@@ -81,10 +80,11 @@ class RegistrationCodeController extends Controller
 
     private function formData(): array
     {
-        $activeBatchId = app(ProgramContextService::class)->activeBatchId(request()->user());
+        $programContext = app(ProgramContextService::class);
+        $activeBatchId = $programContext->activeBatchId(request()->user());
 
         return [
-            'academicYears' => AcademicYear::query()->latest('starts_on')->get(['id', 'name', 'is_active']),
+            'academicYears' => $programContext->academicYears(request()->user(), ['id', 'name', 'is_active']),
             'classes' => SchoolClass::query()->with('academicYear:id,name')->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->orderBy('grade_level')->orderBy('name')->get(),
         ];
     }

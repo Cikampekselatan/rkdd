@@ -9,7 +9,6 @@ use App\Models\AcademicYear;
 use App\Models\AttendanceRecord;
 use App\Models\ClassStudent;
 use App\Models\LearningSession;
-use App\Models\ProgramBatch;
 use App\Models\Report;
 use App\Models\SchoolClass;
 use App\Models\User;
@@ -70,13 +69,13 @@ class ReportController extends Controller
         $activeBatchId = $context['programBatchId'];
         $programContext = $context['programContext'];
 
-        $years = AcademicYear::orderByDesc('starts_on')->get();
+        $years = $programContext->academicYearsForBatch($context['selectedProgramBatch']);
         $activeYear = $years->firstWhere('is_active', true) ?? $years->first();
-        $filters = array_merge(['year' => $activeYear?->id, 'class' => null, 'semester' => null, 'date_from' => null, 'date_to' => null], $request->validated());
+        $filters = $this->filters($request, ['activeYear' => $activeYear, ...$context]);
         $classes = SchoolClass::query()->when($filters['year'], fn ($q, $year) => $q->where('academic_year_id', $year))->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->orderBy('grade_level')->orderBy('name')->get();
         $selectedYear = $years->firstWhere('id', (int) $filters['year']);
         $selectedClass = $filters['class'] ? $classes->firstWhere('id', (int) $filters['class']) : null;
-        $matrixProgramBatchId = $activeBatchId ?? $selectedClass?->program_batch_id;
+        $matrixProgramBatchId = $activeBatchId;
         $sessions = LearningSession::query()
             ->where('academic_year_id', $filters['year'])
             ->when($matrixProgramBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))
@@ -123,9 +122,9 @@ class ReportController extends Controller
             'students' => $students,
             'records' => $records,
             'activeStudentCount' => $activeStudentCount,
-            'participantLabel' => $programContext->participantLabel($request->user()),
-            'groupLabel' => $programContext->groupLabel($request->user()),
-            'periodLabel' => $programContext->periodLabel($request->user()),
+            'participantLabel' => $filters['participant_label'],
+            'groupLabel' => $filters['group_label'],
+            'periodLabel' => $filters['period_label'],
         ]);
     }
 
@@ -134,7 +133,7 @@ class ReportController extends Controller
         $context = $this->reportContext($request);
         $activeBatchId = $context['programBatchId'];
         $programContext = $context['programContext'];
-        $years = AcademicYear::orderByDesc('starts_on')->get();
+        $years = $programContext->academicYearsForBatch($context['selectedProgramBatch']);
         $activeYear = $years->firstWhere('is_active', true) ?? $years->first();
         $filters = $this->filters($request, ['activeYear' => $activeYear, ...$context]);
         $classes = SchoolClass::query()->when($filters['year'], fn ($q, $year) => $q->where('academic_year_id', $year))->when($activeBatchId, fn ($query, int $batchId) => $query->where('program_batch_id', $batchId))->orderBy('name')->get();
@@ -148,15 +147,21 @@ class ReportController extends Controller
     private function reportContext(ReportFilterRequest $request): array
     {
         $programContext = app(ProgramContextService::class);
-        $activeBatchId = $programContext->activeBatchId($request->user());
+        $user = $request->user();
+        $availableBatches = $programContext->availableBatches($user);
+        $activeBatch = $programContext->activeBatch($user);
         $requestedBatchId = $request->filled('program_batch_id') ? $request->integer('program_batch_id') : null;
-        $programBatchId = $request->user()->hasRole(RoleSlug::SuperAdmin) ? $requestedBatchId : $activeBatchId;
+        $selectedProgramBatch = $activeBatch;
+
+        if ($requestedBatchId && $availableBatches->contains('id', $requestedBatchId)) {
+            $selectedProgramBatch = $availableBatches->firstWhere('id', $requestedBatchId);
+        }
 
         return [
             'programContext' => $programContext,
-            'programBatchId' => $programBatchId,
-            'programBatches' => ProgramBatch::query()->with(['program:id,name', 'institution:id,name'])->orderBy('name')->get(),
-            'selectedProgramBatch' => $programBatchId ? ProgramBatch::query()->with(['program:id,name', 'institution:id,name'])->find($programBatchId) : null,
+            'programBatchId' => $selectedProgramBatch?->id,
+            'programBatches' => $availableBatches->where('id', $selectedProgramBatch?->id)->values(),
+            'selectedProgramBatch' => $selectedProgramBatch,
         ];
     }
 
@@ -176,8 +181,8 @@ class ReportController extends Controller
             'date_to' => null,
             'program_batch_id' => $context['programBatchId'],
             'participant_label' => $selectedProgramBatch?->participant_label ?? $programContext->participantLabel($user),
-            'group_label' => $programContext->groupLabel($user),
-            'period_label' => $programContext->periodLabel($user),
+            'group_label' => $selectedProgramBatch ? 'Kelompok/Angkatan' : $programContext->groupLabel($user),
+            'period_label' => $selectedProgramBatch?->period_label ? 'Periode Program' : $programContext->periodLabel($user),
             'viewer_is_leadership' => $user->hasAnyRole([RoleSlug::SuperAdmin, RoleSlug::Admin, RoleSlug::Principal]),
         ], $request->validated(), ['program_batch_id' => $context['programBatchId']]);
     }

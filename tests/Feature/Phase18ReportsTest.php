@@ -94,6 +94,19 @@ class Phase18ReportsTest extends TestCase
         }
     }
 
+    public function test_attendance_report_includes_active_students_without_attendance_records(): void
+    {
+        [$year, $class, $student, $teacher] = $this->reportContext();
+        $unrecordedStudent = $this->student($year, $class, 'Siswa Belum Tercatat');
+
+        $this->actingAs($teacher)
+            ->get(route('reports.show', ['attendance', 'year' => $year->id, 'class' => $class->id]))
+            ->assertOk()
+            ->assertSee($student->name)
+            ->assertSee($unrecordedStudent->name)
+            ->assertSee('Belum tercatat');
+    }
+
     public function test_grade_and_remedial_reports_never_expose_private_teacher_notes(): void
     {
         [$year, , $student, $teacher] = $this->reportContext();

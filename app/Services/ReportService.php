@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\AttendanceStatus;
 use App\Enums\RemedialStatus;
 use App\Enums\ReportType;
 use App\Enums\RoleSlug;
 use App\Models\ActivityDocumentation;
 use App\Models\Assignment;
-use App\Models\AttendanceRecord;
 use App\Models\Grade;
 use App\Models\ImportantNote;
 use App\Models\LearningSession;
@@ -18,6 +18,7 @@ use App\Models\Submission;
 use App\Models\TeacherActivityLog;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ReportService
 {
@@ -85,9 +86,42 @@ class ReportService
         $participant = $f['participant_label'] ?? 'Peserta';
         $group = $f['group_label'] ?? 'Kelompok';
 
-        $q = AttendanceRecord::query()->with(['student:id,name', 'attendanceSession.schoolClass:id,name', 'attendanceSession.learningSession:id,session_number,title'])->whereHas('attendanceSession', fn ($x) => $x->where('academic_year_id', $f['year'])->when($f['program_batch_id'] ?? null, fn ($y, $id) => $y->where('program_batch_id', $id))->when($f['class'] ?? null, fn ($y, $id) => $y->where('class_id', $id))->when($f['semester'] ?? null, fn ($y, $semester) => $y->whereHas('learningSession', fn ($session) => $session->where('semester', $semester)))->when($f['date_from'] ?? null, fn ($y, $d) => $y->whereDate('attendance_date', '>=', $d))->when($f['date_to'] ?? null, fn ($y, $d) => $y->whereDate('attendance_date', '<=', $d)))->latest('recorded_at');
+        $q = DB::table('attendance_sessions as sessions')
+            ->join('class_students as memberships', function ($join): void {
+                $join->on('memberships.academic_year_id', '=', 'sessions.academic_year_id')
+                    ->on('memberships.class_id', '=', 'sessions.class_id')
+                    ->where('memberships.status', 'active');
+            })
+            ->join('users as students', 'students.id', '=', 'memberships.user_id')
+            ->join('classes as classes', 'classes.id', '=', 'sessions.class_id')
+            ->join('learning_sessions as learning_sessions', 'learning_sessions.id', '=', 'sessions.learning_session_id')
+            ->leftJoin('attendance_records as records', function ($join): void {
+                $join->on('records.attendance_session_id', '=', 'sessions.id')
+                    ->on('records.user_id', '=', 'memberships.user_id');
+            })
+            ->where('sessions.academic_year_id', $f['year'])
+            ->when($f['program_batch_id'] ?? null, function ($query, int $id): void {
+                $query->where('sessions.program_batch_id', $id)
+                    ->where('memberships.program_batch_id', $id);
+            })
+            ->when($f['class'] ?? null, fn ($query, $id) => $query->where('sessions.class_id', $id))
+            ->when($f['semester'] ?? null, fn ($query, $semester) => $query->where('learning_sessions.semester', $semester))
+            ->when($f['date_from'] ?? null, fn ($query, $date) => $query->whereDate('sessions.attendance_date', '>=', $date))
+            ->when($f['date_to'] ?? null, fn ($query, $date) => $query->whereDate('sessions.attendance_date', '<=', $date))
+            ->select([
+                'sessions.attendance_date',
+                'students.name as student_name',
+                'classes.name as class_name',
+                'learning_sessions.session_number',
+                'learning_sessions.title as session_title',
+                'records.status as record_status',
+                'records.notes as record_notes',
+            ])
+            ->orderByDesc('sessions.attendance_date')
+            ->orderBy('learning_sessions.session_number')
+            ->orderBy('students.name');
 
-        return [$q, ['date' => 'Tanggal', 'student' => $participant, 'class' => $group, 'session' => 'Pertemuan', 'status' => 'Status', 'notes' => 'Catatan'], fn ($r) => ['date' => $r->attendanceSession->attendance_date->format('d/m/Y'), 'student' => $r->student->name, 'class' => $r->attendanceSession->schoolClass->name, 'session' => 'P'.$r->attendanceSession->learningSession->session_number.' · '.$r->attendanceSession->learningSession->title, 'status' => $r->status->label(), 'notes' => $r->notes ?: '-']];
+        return [$q, ['date' => 'Tanggal', 'student' => $participant, 'class' => $group, 'session' => 'Pertemuan', 'status' => 'Status', 'notes' => 'Catatan'], fn ($r) => ['date' => Carbon::parse($r->attendance_date)->format('d/m/Y'), 'student' => $r->student_name, 'class' => $r->class_name, 'session' => 'P'.$r->session_number.' · '.$r->session_title, 'status' => AttendanceStatus::tryFrom((string) $r->record_status)?->label() ?? 'Belum tercatat', 'notes' => $r->record_notes ?: '-']];
     }
 
     private function teacherLogs(array $f): array

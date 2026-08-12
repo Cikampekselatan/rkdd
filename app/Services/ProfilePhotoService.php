@@ -14,6 +14,10 @@ class ProfilePhotoService
 
     public function store(User $user, UploadedFile $photo): string
     {
+        if (! extension_loaded('gd')) {
+            throw ValidationException::withMessages(['photo' => 'Server belum mengaktifkan ekstensi PHP GD untuk memproses foto.']);
+        }
+
         $image = @imagecreatefromstring($photo->getContent());
 
         if (! $image) {
@@ -25,7 +29,10 @@ class ProfilePhotoService
         imagedestroy($image);
 
         $path = 'profile-photos/user-'.$user->id.'-'.Str::random(12).'.jpg';
-        Storage::disk('public')->put($path, $encoded);
+
+        if (! Storage::disk('public')->put($path, $encoded)) {
+            throw ValidationException::withMessages(['photo' => 'Foto gagal disimpan. Periksa permission storage aplikasi.']);
+        }
 
         if ($user->profile_photo_path) {
             Storage::disk('public')->delete($user->profile_photo_path);

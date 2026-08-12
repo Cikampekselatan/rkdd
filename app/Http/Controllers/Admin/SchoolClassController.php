@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\RoleSlug;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SchoolClassRequest;
-use App\Models\AcademicYear;
 use App\Models\SchoolClass;
 use App\Models\User;
 use App\Services\ProgramContextService;
@@ -94,7 +93,7 @@ class SchoolClassController extends Controller
         $activeBatchId = $activeBatch?->id;
 
         return [
-            'academicYears' => AcademicYear::query()->latest('starts_on')->get(['id', 'name', 'is_active']),
+            'academicYears' => $programContext->academicYears(request()->user(), ['id', 'name', 'is_active']),
             'activeBatch' => $activeBatch,
             'activeBatchId' => $activeBatchId,
             'availableBatches' => $programContext->availableBatches(request()->user()),

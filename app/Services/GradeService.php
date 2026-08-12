@@ -9,6 +9,7 @@ use App\Models\Submission;
 use App\Models\User;
 use App\Notifications\SkuadActivityNotification;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class GradeService
 {
@@ -44,7 +45,11 @@ class GradeService
             return $grade->refresh()->load('scores.criterion', 'scores.rubricLevel');
         });
         if ($publishedNow) {
-            $this->notifyPublished($grade);
+            try {
+                $this->notifyPublished($grade);
+            } catch (Throwable $exception) {
+                report($exception);
+            }
         }
 
         return $grade;
