@@ -43,7 +43,7 @@
                     <div>
                         <p class="skuad-eyebrow">QR presensi {{ strtolower($participantLabel) }}</p>
                         <h2>Scan untuk check-in mandiri</h2>
-                        <p>Instruktur/coach tetap memegang kontrol: {{ strtolower($participantLabel) }} check-in lewat QR/link, lalu status masih bisa dikoreksi manual sebelum sesi ditutup.</p>
+                        <p>Semua {{ strtolower($participantLabel) }} aktif sudah masuk daftar presensi. Instruktur/guru dapat mengisi manual untuk sakit, izin, atau peserta yang tidak bisa scan QR.</p>
                     </div>
                 </div>
                 <div class="attendance-checkin-panel">
@@ -121,7 +121,7 @@
                     @endforeach
                 </div>
                 <div class="attendance-sticky-actions">
-                    <div><strong>{{ $attendanceSession->records->count() }} {{ strtolower($participantLabel) }}</strong><small>Simpan sebelum menutup sesi</small></div>
+                    <div><strong>{{ $attendanceSession->records->count() }} {{ strtolower($participantLabel) }} aktif</strong><small>QR dan input manual dapat digabung sebelum sesi ditutup</small></div>
                     <button class="btn btn-primary skuad-touch-button" type="submit"><i class="bi bi-cloud-check"></i> Simpan presensi</button>
                 </div>
             </form>

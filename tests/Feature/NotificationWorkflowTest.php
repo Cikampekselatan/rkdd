@@ -9,9 +9,12 @@ use App\Enums\SubmissionStatus;
 use App\Models\AcademicYear;
 use App\Models\Assignment;
 use App\Models\ClassStudent;
+use App\Models\Institution;
 use App\Models\LearningModule;
 use App\Models\LearningSession;
 use App\Models\PortfolioItem;
+use App\Models\Program;
+use App\Models\ProgramBatch;
 use App\Models\Rubric;
 use App\Models\RubricCriterion;
 use App\Models\SchoolClass;
@@ -20,6 +23,7 @@ use App\Models\Submission;
 use App\Models\SubmissionVersion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\DatabaseNotification;
 use Tests\TestCase;
 
 class NotificationWorkflowTest extends TestCase
@@ -101,6 +105,57 @@ class NotificationWorkflowTest extends TestCase
         $this->assertTrue($student->notifications()->where('data->kind', 'portfolio_review')->exists());
     }
 
+    public function test_header_and_read_all_notifications_are_scoped_to_active_program(): void
+    {
+        $teacher = User::factory()->withRole(RoleSlug::Teacher)->create();
+        [$skuadBatch, $creatorBatch] = $this->notificationPrograms($teacher);
+
+        $skuadNotification = DatabaseNotification::query()->create([
+            'id' => (string) str()->uuid(),
+            'type' => 'database',
+            'notifiable_type' => User::class,
+            'notifiable_id' => $teacher->id,
+            'data' => [
+                'kind' => 'announcement',
+                'title' => 'Info SKUAD',
+                'url' => route('teacher.dashboard'),
+                'program_batch_id' => $skuadBatch->id,
+            ],
+        ]);
+        $creatorNotification = DatabaseNotification::query()->create([
+            'id' => (string) str()->uuid(),
+            'type' => 'database',
+            'notifiable_type' => User::class,
+            'notifiable_id' => $teacher->id,
+            'data' => [
+                'kind' => 'announcement',
+                'title' => 'Info Konten Kreator',
+                'url' => route('teacher.dashboard'),
+                'program_batch_id' => $creatorBatch->id,
+            ],
+        ]);
+
+        $this->withSession(['active_program_batch_id' => $skuadBatch->id])
+            ->actingAs($teacher)
+            ->get(route('teacher.dashboard'))
+            ->assertOk()
+            ->assertSee('Info SKUAD')
+            ->assertDontSee('Info Konten Kreator');
+
+        $this->withSession(['active_program_batch_id' => $skuadBatch->id])
+            ->actingAs($teacher)
+            ->post(route('interactions.notifications.read-all'))
+            ->assertSessionHas('success');
+
+        $this->assertNotNull($skuadNotification->fresh()->read_at);
+        $this->assertNull($creatorNotification->fresh()->read_at);
+
+        $this->withSession(['active_program_batch_id' => $skuadBatch->id])
+            ->actingAs($teacher)
+            ->get(route('interactions.notifications.read', $creatorNotification->id))
+            ->assertNotFound();
+    }
+
     private function learningContext(): array
     {
         $year = AcademicYear::factory()->active()->create();
@@ -124,5 +179,46 @@ class NotificationWorkflowTest extends TestCase
         }
 
         return $rubric->refresh()->load('criteria.levels');
+    }
+
+    /** @return array{ProgramBatch, ProgramBatch} */
+    private function notificationPrograms(User $teacher): array
+    {
+        $institution = Institution::query()->create([
+            'name' => 'RKDD Notifikasi',
+            'slug' => 'rkdd-notifikasi',
+            'type' => 'rkdd',
+            'is_active' => true,
+        ]);
+
+        $skuad = $this->programBatch($institution, 'SKUAD Notifikasi', 'skuad-notifikasi');
+        $creator = $this->programBatch($institution, 'Konten Kreator Notifikasi', 'creator-notifikasi');
+        $teacher->assignedProgramBatches()->attach([$skuad->id, $creator->id]);
+
+        return [$skuad, $creator];
+    }
+
+    private function programBatch(Institution $institution, string $name, string $slug): ProgramBatch
+    {
+        $program = Program::query()->create([
+            'name' => $name,
+            'slug' => $slug,
+            'type' => 'pelatihan',
+            'primary_color' => '#0f766e',
+            'secondary_color' => '#0f172a',
+            'accent_color' => '#f59e0b',
+            'is_active' => true,
+        ]);
+
+        return ProgramBatch::query()->create([
+            'program_id' => $program->id,
+            'institution_id' => $institution->id,
+            'name' => $name.' 2026',
+            'slug' => $slug.'-2026',
+            'period_label' => '2026',
+            'audience_type' => 'community',
+            'participant_label' => 'Peserta',
+            'is_active' => true,
+        ]);
     }
 }

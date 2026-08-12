@@ -40,7 +40,7 @@ class AttendanceManagementTest extends TestCase
         $this->assertSame(AttendanceSessionStatus::Open, $attendance->status);
         $this->assertSame($academicYear->id, $attendance->academic_year_id);
         $this->assertSame($students->count(), $attendance->records()->count());
-        $this->assertSame($students->count(), $attendance->records()->where('status', AttendanceStatus::Present->value)->count());
+        $this->assertSame($students->count(), $attendance->records()->where('status', AttendanceStatus::Absent->value)->count());
         $this->assertTrue($attendance->check_in_enabled);
         $this->assertNotNull($attendance->check_in_token_hash);
         $this->assertNotNull($attendance->check_in_expires_at);
@@ -119,6 +119,7 @@ class AttendanceManagementTest extends TestCase
         [$teacher, , $class, $learningSession, $students] = $this->attendanceContext();
         $attendance = $this->open($teacher, $class, $learningSession);
         $token = $attendance->fresh()->check_in_token_encrypted;
+        $this->assertSame(AttendanceStatus::Absent, $attendance->records()->where('user_id', $students[0]->id)->firstOrFail()->status);
 
         $this->actingAs($students[0])->get(route('student.attendance.check-in.show', [$attendance, $token]))
             ->assertOk()
@@ -152,6 +153,28 @@ class AttendanceManagementTest extends TestCase
 
         $this->assertSame(AttendanceStatus::Late, $record->fresh()->status);
         $this->assertSame('Scan setelah pembukaan', $record->fresh()->notes);
+    }
+
+    public function test_student_qr_check_in_creates_missing_attendance_record_for_active_member(): void
+    {
+        [$teacher, , $class, $learningSession, $students] = $this->attendanceContext();
+        $attendance = $this->open($teacher, $class, $learningSession);
+        $token = $attendance->fresh()->check_in_token_encrypted;
+
+        $attendance->records()->where('user_id', $students[0]->id)->delete();
+        $this->assertDatabaseMissing('attendance_records', [
+            'attendance_session_id' => $attendance->id,
+            'user_id' => $students[0]->id,
+        ]);
+
+        $this->actingAs($students[0])->post(route('student.attendance.check-in.store', [$attendance, $token]))
+            ->assertRedirect(route('student.attendance.check-in.show', [$attendance, $token]))
+            ->assertSessionHas('success');
+
+        $record = $attendance->records()->where('user_id', $students[0]->id)->firstOrFail();
+        $this->assertSame(AttendanceStatus::Present, $record->status);
+        $this->assertSame('qr', $record->check_in_method);
+        $this->assertNotNull($record->checked_in_at);
     }
 
     public function test_staff_opening_student_qr_gets_clear_guidance_and_attendance_can_be_exported(): void
@@ -232,7 +255,7 @@ class AttendanceManagementTest extends TestCase
             ],
         ])->assertSessionHasErrors('records');
 
-        $this->assertSame(AttendanceStatus::Present, $attendance->records()->where('user_id', $students[0]->id)->firstOrFail()->status);
+        $this->assertSame(AttendanceStatus::Absent, $attendance->records()->where('user_id', $students[0]->id)->firstOrFail()->status);
         $this->assertDatabaseMissing('attendance_records', ['attendance_session_id' => $attendance->id, 'user_id' => $outsider->id]);
     }
 

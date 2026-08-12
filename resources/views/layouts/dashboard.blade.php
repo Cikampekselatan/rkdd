@@ -15,11 +15,12 @@
             $currentUser = auth()->user();
             $currentRole = $currentUser->roles->first()?->name ?? 'Staff';
             $isStudent = $currentUser->hasRole(\App\Enums\RoleSlug::Student);
-            $headerNotifications = $currentUser->notifications()->latest()->limit(5)->get();
-            $unreadNotificationCount = $currentUser->unreadNotifications()->count();
             $programContext = app(\App\Services\ProgramContextService::class);
             $availableProgramBatches = $programContext->availableBatches($currentUser);
             $activeProgramBatch = $programContext->activeBatch($currentUser);
+            $notificationScope = app(\App\Services\NotificationProgramScope::class);
+            $headerNotifications = $notificationScope->apply($currentUser->notifications(), $currentUser)->latest()->limit(5)->get();
+            $unreadNotificationCount = $notificationScope->apply($currentUser->unreadNotifications(), $currentUser)->count();
             $participantLabel = $programContext->participantLabel($currentUser);
             $groupLabel = $programContext->groupLabel($currentUser);
             $dashboardProgramTheme = $activeProgramBatch?->program

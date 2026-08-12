@@ -68,7 +68,7 @@ class AttendanceController extends Controller
         $attendance = $open->execute($request->validated(), $request->user());
 
         return redirect()->route('teacher.attendance.show', $attendance)
-            ->with('success', 'Sesi presensi dibuka. Semua siswa aktif ditandai hadir sebagai nilai awal.');
+            ->with('success', 'Sesi presensi dibuka. Semua siswa aktif sudah masuk daftar presensi dengan status awal belum hadir.');
     }
 
     public function show(AttendanceSession $attendanceSession, AttendanceSummaryService $summaries): View

@@ -67,7 +67,7 @@ class OpenAttendanceSession
             $attendance->records()->insert($studentIds->map(fn (int $studentId): array => [
                 'attendance_session_id' => $attendance->id,
                 'user_id' => $studentId,
-                'status' => AttendanceStatus::Present->value,
+                'status' => AttendanceStatus::Absent->value,
                 'notes' => null,
                 'recorded_by' => $actor->id,
                 'recorded_at' => $now,
